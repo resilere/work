@@ -39,11 +39,16 @@ class data_patches(Dataset):
     
     def random_index(self,  patch_size,number_patches):
         image_shape = self.image.shape
-        #print(image_shape)
+        print(image_shape)
         #print(self.label.shape)
-        x_random = np.random.choice(image_shape[0]-patch_size[0]+1, number_patches)
-        y_random = np.random.choice(image_shape[1]-patch_size[1]+1, number_patches)
-        z_random = np.random.choice(image_shape[2]-patch_size[2]+1, number_patches)
+        x_random = np.random.choice(range(30, 140-patch_size[0]), number_patches)
+        y_random = np.random.choice(range(55, 185-patch_size[1]), number_patches)
+        z_random = np.random.choice(range(50, 220-patch_size[2]), number_patches)
+# =============================================================================
+#         x_random = np.random.choice(image_shape[0]-patch_size[0]+1, number_patches)
+#         y_random = np.random.choice(image_shape[1]-patch_size[1]+1, number_patches)
+#         z_random = np.random.choice(image_shape[2]-patch_size[2]+1, number_patches)
+# =============================================================================
         
         index_list = [x_random,y_random,z_random]
         self.index_list = index_list
@@ -56,19 +61,46 @@ class data_patches(Dataset):
         sample = {"image":image_patch, "label":label_patch.astype(np.int_)}
         
         return sample
-    
+    def crop_image_only_outside(self, tol=0):
+    # img is 3D image data
+    # tol  is tolerance
+        #print(self.image.shape)
+        img = self.image 
+        
+        mask = img>tol
+        
+        m,n,o = img.shape
+        
+        masko,maskm,maskn = mask.any((0,1)),mask.any((1,2)),mask.any((0,2))
+        print(masko)
+        
+        col_start,col_end = maskn.argmax(),n-maskn[::-1].argmax()
+        
+        row_start,row_end = maskm.argmax(),m-maskm[::-1].argmax()
+        z_start, z_end = masko.argmax(),o-masko[::-1].argmax()
+        self.image = img[row_start:row_end,col_start:col_end, z_start:z_end]
+        
+        
+        
 
 # =============================================================================
-# data = data_patches(r'C:\Users\islere\Task01_BrainTumour\imagesTr\BRATS_001.nii.gz', r'C:\Users\islere\Task01_BrainTumour\labelsTr\BRATS_001-labels.nii.gz')
-# print(data.image.shape)
-# print(data.label.shape)
-# print(data.index_list)
-# data.random_index( [1,128,128],10)  
+data = data_patches(r'C:\Users\islere\Task01_BrainTumour\imagesTr\BRATS_001.nii.gz', r'C:\Users\islere\Task01_BrainTumour\labelsTr\BRATS_001-labels.nii.gz')
+
+#image = image[0]
+#print(image.shape)
+cropped_image = data.crop_image_only_outside()
+#print(image[103, 52,120])
+plt.imshow(data.image[90,:,:])
+##print(data.image.shape)
+## print(data.label.shape)
+#data.random_index([1,32,32],10) 
+#print(data.index_list)
+ 
 # print(data.index_list)
 # print(data[4:8]) 
 # =============================================================================
 
-###print(data.index_list)
+#print(data.index_list)
 #plt.imshow(data[5]["image"][0,:,:])
 #plt.show()
 #plt.close()
