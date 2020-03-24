@@ -24,13 +24,15 @@ def dicom_to_array(directory):
     arr= sitk.GetArrayFromImage(image)
     
     return arr
+list_arr = []
 def multiple_nifti_arr(list):
     '''creates a list of the arrays from a list of nifti files'''
-    list_arr = []
+    
     for directory in list:
         image = sitk.ReadImage(directory)
         array = sitk.GetArrayFromImage(image)
         list_arr.append(array)
+    return list_arr
         
 
 def nifti_to_array(directory):
@@ -95,3 +97,7 @@ def patch_label_random (array_image, array_label):
     labels_patches = view_as_windows(array_label, window_shape)
     label_patch = labels_patches[x_random,y_random,z_random,0,:,:]
     return image_patch, label_patch
+
+multiple_nifti_arr([r'/home/eser/Downloads/Task05_Prostate/imagesTr/prostate_00.nii.gz',
+                    r'/home/eser/Downloads/Task05_Prostate/imagesTr/prostate_01.nii.gz'])
+print(list_arr)
