@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import dicom_to_patches as dtp
 import torch
-import torchvision
+#import torchvision
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
@@ -76,7 +76,7 @@ for epoch in range(100):  # loop over the dataset multiple times
             bilder_zusammen = torch.cat((200*torch.argmax(output_image,1).unsqueeze(1).float(), 200*label.float(), input_image.float()),3)
             print(bilder_zusammen.shape)
             
-            img_grid = torchvision.utils.make_grid(bilder_zusammen.squeeze(1))
+            #img_grid = torchvision.utils.make_grid(bilder_zusammen.squeeze(1))
            
              # ...log the running loss
             writer.add_scalar('training loss',
@@ -89,9 +89,8 @@ for epoch in range(100):  # loop over the dataset multiple times
                             global_step=epoch * len(train_loader) + i)
             running_loss = 0.0
             # write to tensorboard
-            writer.add_image(r'C:\Users\islere\Downloads\dicom_data\runs\brain_images\brain_images_trained' + str(i) + '_' + str(epoch), img_grid)
-            #writer.add_figure('figures', plt.imshow(label),close = True)
-            #writer.flush()
+            #writer.add_image(r'C:\Users\islere\Downloads\dicom_data\runs\brain_images\brain_images_trained' + str(i) + '_' + str(epoch), img_grid)
+            
             output_array = output_image.detach().numpy()
             print(output_array.shape)
             output_array_max = np.argmax(output_array[0], axis=0)

@@ -24,6 +24,14 @@ def dicom_to_array(directory):
     arr= sitk.GetArrayFromImage(image)
     
     return arr
+def multiple_nifti_arr(list):
+    '''creates a list of the arrays from a list of nifti files'''
+    list_arr = []
+    for directory in list:
+        image = sitk.ReadImage(directory)
+        array = sitk.GetArrayFromImage(image)
+        list_arr.append(array)
+        
 
 def nifti_to_array(directory):
     '''turns nifti directories to arrays'''
