@@ -98,6 +98,8 @@ def patch_label_random (array_image, array_label):
     label_patch = labels_patches[x_random,y_random,z_random,0,:,:]
     return image_patch, label_patch
 
-multiple_nifti_arr([r'/home/eser/Downloads/Task05_Prostate/imagesTr/prostate_00.nii.gz',
-                    r'/home/eser/Downloads/Task05_Prostate/imagesTr/prostate_01.nii.gz'])
-print(list_arr)
+# =============================================================================
+# #multiple_nifti_arr([r'/home/eser/Downloads/Task05_Prostate/imagesTr/prostate_00.nii.gz',
+#                     r'/home/eser/Downloads/Task05_Prostate/imagesTr/prostate_01.nii.gz'])
+# #print(list_arr)
+# =============================================================================

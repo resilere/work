@@ -17,13 +17,21 @@ from torch.utils.tensorboard import SummaryWriter
 net = model.Net2()
 net.train()
 
-data = dtp.data_patches(r'C:\Users\islere\Task01_BrainTumour\imagesTr\BRATS_001.nii.gz', r'C:\Users\islere\Task01_BrainTumour\labelsTr\BRATS_001-labels.nii.gz')
+data = dtp.data_patches(r'/home/eser/Task01-BrainTumor/Images/BRATS_001.nii.gz','/home/eser/Task01-BrainTumor/Labels/BRATS_001-labels.nii')
+data2 = dtp.data_patches(r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz','/home/eser/Task01-BrainTumor/Labels/BRATS_002-labels.nii')
 #validation_data= .....
 cropped_image = data.crop_image_only_outside()
-print(data.image.shape)
-data.random_index([1,32,32],1000)
-#print(data.index_list)
+cropped_image = data2.crop_image_only_outside()
+print('data1:', data.image.shape)
+print('data2:', data2.image.shape)
+data.random_index([1,32,32],100)
+data2.random_index([1,32,32],100)
+print(data.index_list)
+print(data2.index_list)
 print(len(data))
+print(len(data2))
+print(type(data))
+exit()
 print("Dicom geladen")
 validation_split = .2
 dataset_size = len(data.image)
@@ -43,7 +51,7 @@ def plot_classes_preds(net, images, labels):
     return fig
     
     
-for epoch in range(100):  # loop over the dataset multiple times
+for epoch in range(1):  # loop over the dataset multiple times
 
     running_loss = 0.0
 
