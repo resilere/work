@@ -55,7 +55,7 @@ class data_patches(Dataset):
         index_list = [x_label_positive,y_label_positive,z_label_positive]
         self.index_list = index_list
         self.patch_size = patch_size
-        print('index list:', index_list)
+        #print('index list:', index_list)
 
 
     def __getitem__(self, idx):

@@ -13,20 +13,54 @@ import torchvision
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import ConcatDataset
+
+N_EPOCH = 100
+N_PATCH = 100
+OUTPUT_FREQUENCY = 50
+
+
+INPUT_FILES = (
+    (
+        r'/home/eser/Task01-BrainTumor/Images/BRATS_001.nii.gz', 
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_001-labels.nii.gz'
+    ),
+    (
+        r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_002-labels.nii.gz'
+    ),
+)
+
+# Preprocess - concatenate datasets
+
+datasets = []
+
+for image_file, label_file in INPUT_FILES:
+
+    data = dtp.data_patches(image_file, label_file)
+    
+    #validation_data= .....
+    data.crop_image_only_outside()
+    print("Loaded %s, image shape: %s"%(image_file, str(data.image.shape)))
+
+    #import ipdb; ipdb.set_trace()
+
+    data.random_index([1,32,32], N_PATCH)
+
+    #print(data.index_list)
+    #print(len(data))
+    #print("Dicom geladen")
+    # validation_split = .2
+    #dataset_size = len(data.image)
+
+    datasets.append(data)
+
+data = ConcatDataset(datasets)
+
+#import ipdb; ipdb.set_trace()
 
 net = model.Net2()
 net.train()
-
-data = dtp.data_patches(r'C:\Users\islere\Task01_BrainTumour\imagesTr\BRATS_001.nii.gz', r'C:\Users\islere\Task01_BrainTumour\labelsTr\BRATS_001-labels.nii.gz')
-#validation_data= .....
-cropped_image = data.crop_image_only_outside()
-print(data.image.shape)
-data.random_index([1,32,32],1000)
-#print(data.index_list)
-print(len(data))
-print("Dicom geladen")
-validation_split = .2
-dataset_size = len(data.image)
 
 
 train_loader = torch.utils.data.DataLoader(data, batch_size = 1)
@@ -34,6 +68,7 @@ train_loader = torch.utils.data.DataLoader(data, batch_size = 1)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.0001)
 writer = SummaryWriter('runs/brain_images')
+
 def plot_classes_preds(net, images, labels):
     fig = plt.figure(figsize=(12, 48))
     for idx in np.arange(4):
@@ -43,7 +78,7 @@ def plot_classes_preds(net, images, labels):
     return fig
     
     
-for epoch in range(100):  # loop over the dataset multiple times
+for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 
     running_loss = 0.0
 
@@ -68,7 +103,8 @@ for epoch in range(100):  # loop over the dataset multiple times
         # print statistics
         running_loss += loss.item()
    
-        if i % 50 == 49:    # print every 2000 mini-batches
+        if i % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every 2000 mini-batches
+            plt.clf()
             print('[%d, %5d] loss: %.3f' %
                   (epoch + 1, i + 1, running_loss / 2000))
             #running_loss = 0.0
@@ -102,7 +138,8 @@ for epoch in range(100):  # loop over the dataset multiple times
             ax1.imshow(output_array_max, cmap = 'coolwarm')
             ax2.imshow(label.squeeze().squeeze(), cmap = 'coolwarm')
             ax3.imshow(input_image.squeeze().squeeze(), cmap = 'gray')
-            plt.show()
+            plt.tight_layout()
+            plt.savefig("out/out-%05d.jpg"%(epoch))
 
     
 
