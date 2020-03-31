@@ -4,7 +4,7 @@ Created on Mon Feb 17 09:27:58 2020
 
 @author: islere
 """
-import modelpy as model
+import modelpy as module
 import numpy as np
 import matplotlib.pyplot as plt
 import dicom_to_patches as dtp
@@ -12,12 +12,12 @@ import torch
 #import torchvision
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
+#from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import ConcatDataset
 from torch.utils.data.sampler import SubsetRandomSampler
 
 
-N_EPOCH = 10
+N_EPOCH = 2
 N_PATCH = 10
 OUTPUT_FREQUENCY = 5
 
@@ -83,7 +83,7 @@ train_loader = torch.utils.data.DataLoader(data, batch_size=batch_size,
 validation_loader = torch.utils.data.DataLoader(data, batch_size=batch_size,
                                                 sampler=valid_sampler)
 
-net = model.Net2()
+net = module.Net2()
 net.train()
 
 
@@ -109,8 +109,9 @@ optimizer = optim.Adam(net.parameters(), lr=0.0001)
 '''this is where the training begins'''    
 for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 
-    running_loss = 0.0
-
+    train_loss = 0.0
+    valid_loss = 0.0
+    
     for i, sample in enumerate(train_loader, 0):
   
         # get the inputs; data is a list of [inputs, labels]
@@ -130,13 +131,13 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         optimizer.step()
         
         # print statistics
-        running_loss += loss.item()
+        train_loss += loss.item()
    
         if i % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
             plt.clf()
-            print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 2000))
-            running_loss = 0.0
+            print('[%d, %5d] train loss: %.3f' %
+                  (epoch + 1, i + 1, train_loss / 2000))
+            train_loss = 0.0
             #print(output_image.shape)
 # =============================================================================
 #   '''this is for tensorboard, which gives an error '''             
@@ -170,11 +171,49 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             plt.tight_layout()
             plt.show()
             #plt.savefig("out/out-%05d.jpg"%(epoch))
-
     
+    print('Finished Training')
+    
+    for i, sample in enumerate(validation_loader, 0):
+        
+        input_image = sample["image"].float()
+        label = sample["label"].long()
+    
+        # zero the parameter gradients
+        optimizer.zero_grad()
 
-print('Finished Training')
-print(output_image.shape)
+        # forward + backward + optimize
+        output_image = net(input_image)
+        
+        loss= criterion(output_image, label.squeeze(0) )
+        
+        loss.backward()
+        optimizer.step()
+        
+        # print statistics
+        valid_loss += loss.item()
+   
+        if i % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
+            plt.clf()
+            print('[%d, %5d] validation loss: %.3f' %
+                  (epoch + 1, i + 1, valid_loss / 2000))
+            valid_loss = 0.0
+            
+            output_array = output_image.detach().numpy()
+            print(output_array.shape)
+            output_array_max = np.argmax(output_array[0], axis=0)
+            print(output_array_max.shape)
+            label = label.detach().numpy()[:, ::-1, :, :]
+            #input_array = inputs.detach().numpy()[:, ::-1, :, :]
+            f, (ax1, ax2, ax3) = plt.subplots(1,3)
+            ax1.imshow(output_array_max, cmap = 'viridis')
+            ax2.imshow(label.squeeze().squeeze(), cmap = 'viridis')
+            ax3.imshow(input_image.squeeze().squeeze(), cmap = 'gray')
+            plt.tight_layout()
+            plt.show()
+
+
+
 
 #img_grid = torchvision.utils.make_grid(output_image[:,0:3,...])
 
