@@ -9,17 +9,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import dicom_to_patches as dtp
 import torch
-#import torchvision
+import torchvision
 import torch.nn as nn
 import torch.optim as optim
-#from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import ConcatDataset
 from torch.utils.data.sampler import SubsetRandomSampler
 
 
-N_EPOCH = 2
-N_PATCH = 10
-OUTPUT_FREQUENCY = 1
+N_EPOCH = 3
+N_PATCH = 50
+OUTPUT_FREQUENCY = 10
 
 
 INPUT_FILES = (
@@ -93,18 +93,16 @@ net.train()
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.0001)
 
-# =============================================================================
-# '''this is for tensorboard '''
-# writer = SummaryWriter('runs/brain_images')
-# 
-# def plot_classes_preds(net, images, labels):
-#     fig = plt.figure(figsize=(12, 48))
-#     for idx in np.arange(4):
-#         
-#         plt.imshow(images[0][idx].detach().numpy())
-#         
-#     return fig
-# =============================================================================
+'''this is for tensorboard '''
+writer = SummaryWriter('runs/brain_images')
+
+def plot_classes_preds(net, images, labels):
+    fig = plt.figure(figsize=(12, 48))
+    for idx in np.arange(4):
+        
+        plt.imshow(images[0][idx].detach().numpy())
+        
+    return fig
     
 
 '''this is where the training begins'''    
@@ -137,8 +135,8 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         if i % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
             plt.clf()
             print('[%d, %5d] train loss: %.3f' %
-                  (epoch + 1, i + 1, train_loss / 2000))
-            train_loss = 0.0
+                  (epoch + 1, i + 1, train_loss / OUTPUT_FREQUENCY))
+            
             
             
             output_array = output_image.detach().numpy()
@@ -154,6 +152,23 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             plt.tight_layout()
             plt.show()
             #plt.savefig("out/out-%05d.jpg"%(epoch))
+# '''this is for tensorboard, which gives an error '''             
+# =============================================================================
+#             bilder_zusammen = torch.cat((200*torch.argmax(output_image,1).unsqueeze(1).float(), 200*label.float(), input_image.float()),3)
+#             #print(bilder_zusammen.shape)
+#             
+#             img_grid = torchvision.utils.make_grid(bilder_zusammen.squeeze(1))
+#            
+# =============================================================================
+            # ...log the running loss
+            writer.add_scalar('training loss', train_loss / OUTPUT_FREQUENCY, epoch *len(train_loader) + i)
+            # ...log a Matplotlib Figure showing the model's predictions on a random mini-batch
+            #writer.add_figure('predictions vs. actuals', plot_classes_preds(net, output_image, label), global_step=epoch * len(train_loader) + i)
+            train_loss = 0.0
+            #write to tensorboard
+            # writer.add_image('image' + str(i) + '_' + str(epoch), img_grid)
+            # writer.add_figure('figures', plt.imshow(label),close = True)
+            writer.close()
     
     print('Finished Training')
     
@@ -179,8 +194,8 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
             plt.clf()
             print('[%d, %5d] validation loss: %.3f' %
-                  (epoch + 1, j + 1, valid_loss / 2000))
-            valid_loss = 0.0
+                  (epoch + 1, j + 1, valid_loss /  OUTPUT_FREQUENCY))
+            
             
             output_array = output_image.detach().numpy()
             print(output_array.shape)
@@ -194,26 +209,12 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             ax3.imshow(input_image.squeeze().squeeze(), cmap = 'gray')
             plt.tight_layout()
             plt.show()
+            
+            writer.add_scalar('validation loss', valid_loss /  OUTPUT_FREQUENCY, epoch * len(validation_loader) + j)
+            valid_loss = 0.0
+            writer.close()
 
-
-# =============================================================================
-#   '''this is for tensorboard, which gives an error '''             
-#             bilder_zusammen = torch.cat((200*torch.argmax(output_image,1).unsqueeze(1).float(), 200*label.float(), input_image.float()),3)
-#             #print(bilder_zusammen.shape)
-#             
-#             img_grid = torchvision.utils.make_grid(bilder_zusammen.squeeze(1))
-#            
-#              # ...log the running loss
-#             writer.add_scalar('training loss', running_loss / 1000, epoch * len(train_loader) + i)
-#             # ...log a Matplotlib Figure showing the model's predictions on a random mini-batch
-#             writer.add_figure('predictions vs. actuals', plot_classes_preds(net, output_image, label), global_step=epoch * len(train_loader) + i)
-#             running_loss = 0.0
-#             #write to tensorboard
-#             writer.add_image(r'C:\Users\islere\Downloads\dicom_data\runs\brain_images\brain_images_trained' + str(i) + '_' + str(epoch), img_grid)
-#             writer.add_figure('figures', plt.imshow(label),close = True)
-#             writer.flush()
-#             
-# =============================================================================
+            
 
 #img_grid = torchvision.utils.make_grid(output_image[:,0:3,...])
 
