@@ -17,19 +17,31 @@ from torch.utils.data import ConcatDataset
 from torch.utils.data.sampler import SubsetRandomSampler
 
 
-N_EPOCH = 3
-N_PATCH = 50
-OUTPUT_FREQUENCY = 10
+N_EPOCH = 50
+N_PATCH = 100
+OUTPUT_FREQUENCY = 50
 
 
 INPUT_FILES = (
     (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_001.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_001-labels.nii.gz'
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_001.nii.gz'
     ),
     (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_002-labels.nii.gz'
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
+    ),
+    (
+        r'/home/eser/Task01-BrainTumor/Images/BRATS_003.nii.gz', 
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_003.nii.gz'
+    ),
+    (
+        r'/home/eser/Task01-BrainTumor/Images/BRATS_004.nii.gz', 
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_004.nii.gz'
+    ),
+    (
+        r'/home/eser/Task01-BrainTumor/Images/BRATS_005.nii.gz', 
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_005.nii.gz'
     ),
 )
 
@@ -179,6 +191,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 
         output_image = net(input_image)
         
+        loss= criterion(output_image, label.squeeze(0)) 
         valid_loss += loss.item()
    
         if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
