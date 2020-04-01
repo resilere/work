@@ -171,24 +171,14 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             writer.close()
     
     print('Finished Training')
-    
+    net.eval()
     for j, sample2 in enumerate(validation_loader, 0):
         
         input_image = sample2["image"].float()
         label = sample2["label"].long()
-    
-        # zero the parameter gradients
-        optimizer.zero_grad()
 
-        # forward + backward + optimize
         output_image = net(input_image)
         
-        loss= criterion(output_image, label.squeeze(0) )
-        
-        loss.backward()
-        optimizer.step()
-        
-        # print statistics
         valid_loss += loss.item()
    
         if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
