@@ -13,13 +13,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-from torch.utils.data import ConcatDataset
+#from torch.utils.data import ConcatDataset
 #from torch.utils.data.sampler import SubsetRandomSampler
 
 
-N_EPOCH = 10
+N_EPOCH = 1
 N_PATCH = 50
-OUTPUT_FREQUENCY = 10
+OUTPUT_FREQUENCY = 50
 batch_size = 1
 
 INPUT_FILES_TRAIN = (
@@ -47,6 +47,11 @@ INPUT_FILES_TRAIN = (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_006.nii.gz', 
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_006.nii.gz'
     ),
+    
+    
+)
+
+INPUT_FILES_VALIDATION = (
     (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_007.nii.gz', 
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_007.nii.gz'
@@ -54,65 +59,11 @@ INPUT_FILES_TRAIN = (
     (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_008.nii.gz', 
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_008.nii.gz'
-    ),
-    (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_009.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_009.nii.gz'
-    ),
-    (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_010.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_010.nii.gz'
-    ),
+    )
 )
 
-INPUT_FILES_VALIDATION = (
-    (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_011.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_011.nii.gz'
-    ),
-    (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_012.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_012.nii.gz'
-    ),
-)
-
-# Preprocess - concatenate datasets
-
-datasets = []
-
-for image_file, label_file in INPUT_FILES_TRAIN:
-
-    data = dtp.data_patches(image_file, label_file)
-    
-    
-    data.crop_image_only_outside()
-    print("Loaded %s, image shape: %s"%(image_file, str(data.image.shape)))
-
-    #import ipdb; ipdb.set_trace()
-
-    data.random_index([1,32,32], N_PATCH)
-
-    datasets.append(data)
-
-train_data = ConcatDataset(datasets)
-
-datasets2 = []
-
-for image_file, label_file in INPUT_FILES_VALIDATION:
-
-    data = dtp.data_patches(image_file, label_file)
-    
-    
-    data.crop_image_only_outside()
-    print("Loaded %s, image shape: %s"%(image_file, str(data.image.shape)))
-
-    data.random_index([1,32,32], N_PATCH)
-
-    datasets2.append(data)
-
-validation_data = ConcatDataset(datasets2)
-
-
+train_data = dtp.concat_datasets(INPUT_FILES_TRAIN, N_PATCH)
+validation_data = dtp.concat_datasets(INPUT_FILES_VALIDATION, N_PATCH)
 
 
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, 
