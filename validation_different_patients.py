@@ -17,10 +17,12 @@ from torch.utils.tensorboard import SummaryWriter
 #from torch.utils.data.sampler import SubsetRandomSampler
 
 
-N_EPOCH = 1
-N_PATCH = 50
+N_EPOCH = 10
+N_PATCH = 100
 OUTPUT_FREQUENCY = 50
+MIN_LOSS = 10
 batch_size = 1
+PATH = "/home/eser/work/lstmmodelgpu.pth"
 
 INPUT_FILES_TRAIN = (
     (
@@ -39,6 +41,11 @@ INPUT_FILES_TRAIN = (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_004.nii.gz', 
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_004.nii.gz'
     ),
+       
+    
+)
+
+INPUT_FILES_VALIDATION = (
     (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_005.nii.gz', 
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_005.nii.gz'
@@ -47,19 +54,6 @@ INPUT_FILES_TRAIN = (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_006.nii.gz', 
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_006.nii.gz'
     ),
-    
-    
-)
-
-INPUT_FILES_VALIDATION = (
-    (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_007.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_007.nii.gz'
-    ),
-    (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_008.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_008.nii.gz'
-    )
 )
 
 train_data = dtp.concat_datasets(INPUT_FILES_TRAIN, N_PATCH)
@@ -90,7 +84,8 @@ def plot_classes_preds(net, images, labels):
     return fig
     
 
-'''this is where the training begins'''    
+'''this is where the training begins''' 
+valid_loss_min = MIN_LOSS   
 for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 
     train_loss = 0.0
@@ -157,6 +152,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
     
     print('Finished Training')
     net.eval()
+    
     for j, sample2 in enumerate(validation_loader, 0):
         
         input_image = sample2["image"].float()
@@ -172,7 +168,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             print('[%d, %5d] validation loss: %.3f' %
                   (epoch + 1, j + 1, valid_loss /  OUTPUT_FREQUENCY))
             
-            
+                        
             output_array = output_image.detach().numpy()
             print(output_array.shape)
             output_array_max = np.argmax(output_array[0], axis=0)
@@ -186,9 +182,25 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             plt.tight_layout()
             plt.show()
             
+            if valid_loss/OUTPUT_FREQUENCY < valid_loss_min:
+                valid_loss_min = valid_loss/OUTPUT_FREQUENCY
+                torch.save(net.state_dict(), PATH)
+                
             writer.add_scalar('validation loss', valid_loss /  OUTPUT_FREQUENCY, epoch * len(validation_loader) + j)
+            
             valid_loss = 0.0
             writer.close()
+
+
+# Print model's state_dict
+print("Model's state_dict:")
+for param_tensor in net.state_dict():
+    print(param_tensor, "\t", net.state_dict()[param_tensor].size())
+
+# Print optimizer's state_dict
+print("Optimizer's state_dict:")
+for var_name in optimizer.state_dict():
+    print(var_name, "\t", optimizer.state_dict()[var_name])
 
             
 
