@@ -75,10 +75,6 @@ except AttributeError as error:
 ### 'dict' object has no attribute 'eval'
 
 net.load_state_dict(checkpoint)
-### now you can evaluate it
-net.eval()
-
-
 
 
 criterion = nn.CrossEntropyLoss()
