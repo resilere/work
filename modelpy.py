@@ -54,3 +54,27 @@ class Net2(nn.Module):
         #print('conv3',x.shape)
         
         return x
+class Net2_5D(nn.Module):
+    
+    '''this is 2,5 D triplanar CNN model'''
+    
+    def __init__(self):
+        super(Net2_5D, self).__init__()
+        self.conv1 = nn.Conv2d(32, 8, 5, padding=2)
+        self.conv2 = nn.Conv2d(8, 16, 5, padding=2)
+        
+        self.conv3 = nn.Conv2d(16, 32, 5, padding=2)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        #print('conv1',x.shape)
+        
+        x = F.max_pool2d(x, (2,2))
+        #print('maxpool', x.shape)
+        x = F.relu(self.conv2(x))
+        #print('conv2',x.shape)
+        
+        x = self.conv3(x)
+        #print('conv3',x.shape)
+        
+        return x

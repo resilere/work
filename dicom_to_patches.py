@@ -87,7 +87,7 @@ class data_patches(Dataset):
         self.label = self.label[row_start:row_end,col_start:col_end, z_start:z_end]
         
 #this function is not inside the class        
-def concat_datasets(input_files_list, N_PATCH,  ):  
+def concat_datasets(input_files_list, N_PATCH, PATCH_SIZE ):  
     '''concatenates multiple datasets into one dataset'''
     datasets= []
     for image_file, label_file in input_files_list:
@@ -97,22 +97,9 @@ def concat_datasets(input_files_list, N_PATCH,  ):
         data.crop_image_only_outside()
         print("Loaded %s, image shape: %s"%(image_file, str(data.image.shape)))
     
-        data.random_index([1,32,32], N_PATCH)
+        data.random_index(PATCH_SIZE, N_PATCH)
     
         datasets.append(data)
     
     return ConcatDataset(datasets)
 
-
-INPUT_FILES_VALIDATION = (
-    (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_007.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_007.nii.gz'
-    ),
-    (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_008.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_008.nii.gz'
-    )
-)
-validation_dataset = concat_datasets(INPUT_FILES_VALIDATION, 10)
-print('validation_dataset size:', len(validation_dataset))

@@ -19,7 +19,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 N_EPOCH = 1
 N_PATCH = 10
-PATCH_SIZE = [1, 32, 32]
+PATCH_SIZE = [32, 32, 32]
 OUTPUT_FREQUENCY = 5
 MIN_LOSS = 10
 batch_size = 1
@@ -68,7 +68,7 @@ train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
 validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=batch_size,
                                                )
 
-net = module.Net2()
+net = module.Net2_5D()
 net.train()
 
 
@@ -106,7 +106,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         # forward + backward + optimize
         output_image = net(input_image)
         
-        
+        import ipdb; ipdb.set_trace()
         loss= criterion(output_image, label.squeeze(0) )
         
         loss.backward()
