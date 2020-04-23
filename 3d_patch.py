@@ -70,7 +70,7 @@ validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=batc
 
 net = module.Net2_5D()
 net.train()
-
+#import ipdb; ipdb.set_trace()
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.0001)
@@ -106,7 +106,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         # forward + backward + optimize
         output_image = net(input_image)
         
-        import ipdb; ipdb.set_trace()
+        #import ipdb; ipdb.set_trace()
         loss= criterion(output_image, label.squeeze(0) )
         
         loss.backward()

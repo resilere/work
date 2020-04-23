@@ -66,15 +66,18 @@ class Net2_5D(nn.Module):
         self.conv3 = nn.Conv2d(16, 32, 5, padding=2)
 
     def forward(self, x):
+        print('x', x.shape)
         x = F.relu(self.conv1(x))
-        #print('conv1',x.shape)
+        print('conv1',x.shape)
         
-        x = F.max_pool2d(x, (2,2))
-        #print('maxpool', x.shape)
+# =============================================================================
+#         x = F.max_pool2d(x, (2,2))
+#         print('maxpool', x.shape)
+# =============================================================================
         x = F.relu(self.conv2(x))
-        #print('conv2',x.shape)
+        print('conv2',x.shape)
         
         x = self.conv3(x)
-        #print('conv3',x.shape)
+        print('conv3',x.shape)
         
         return x
