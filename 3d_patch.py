@@ -103,11 +103,12 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         # zero the parameter gradients
         optimizer.zero_grad()
 
-        # forward + backward + optimize
-        output_image = net(input_image)
+        # forward + backward + optimize. 
+        # @c: split the outputchannels in image direction in x -32- and segmentation classes -4-
+        output_image = net(input_image).view(batch_size, 4,32,32,32)
         
-        #import ipdb; ipdb.set_trace()
-        loss= criterion(output_image, label.squeeze(0) )
+        #import ipdb; ipdb.set_trace() @c: squeeze is shouldnt be neccesary anymore
+        loss= criterion(output_image, label)
         
         loss.backward()
         optimizer.step()
