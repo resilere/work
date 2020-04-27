@@ -127,29 +127,34 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             print(output_array.shape)
             output_array_max = np.argmax(output_array[0], axis=0)
             print(output_array_max.shape)
+            print('label', label.shape)
+            print('input',input_image.shape)
+            plot_input = input_image.squeeze()[np.random.randint(32), :,:]
+            plot_label = label.squeeze()[np.random.randint(32), :,:]
+            plot_output = output_array_max[np.random.randint(32), :,:]
             #label = label.detach().numpy()[:, ::-1, :, :]
             #input_array = inputs.detach().numpy()[:, ::-1, :, :]
             f, (ax1, ax2, ax3) = plt.subplots(1,3)
-            ax1.imshow(output_array_max, cmap = 'coolwarm')
-            ax2.imshow(label.squeeze().squeeze(), cmap = 'coolwarm')
-            ax3.imshow(input_image.squeeze().squeeze(), cmap = 'gray')
+            ax1.imshow(plot_output , cmap = 'coolwarm')
+            ax2.imshow(plot_label, cmap = 'coolwarm')
+            ax3.imshow(plot_input, cmap = 'gray')
             plt.tight_layout()
             plt.show()
             #plt.savefig("out/out-%05d.jpg"%(epoch))
 # '''this is for tensorboard, now it works ''' 
 
             
-            images_together = torch.cat((torch.argmax(output_image,1).unsqueeze(1), label, input_image.long()),3)
+            #images_together = torch.cat((torch.argmax(output_image,1).unsqueeze(1), label, input_image.long()),3)
             
-            img_grid = torchvision.utils.make_grid(images_together.squeeze(1))
-           
+            #img_grid = torchvision.utils.make_grid([plot_output, plot_label, plot_input])
+            #img_array = np.array([plot_output, plot_label, plot_input])
             # ...log the running loss
             writer.add_scalar('training loss', train_loss / OUTPUT_FREQUENCY, epoch *len(train_loader) + i)
             # ...log a Matplotlib Figure showing the model's predictions on a random mini-batch
             #writer.add_figure('predictions vs. actuals', plot_classes_preds(net, output_image, label), global_step=epoch * len(train_loader) + i)
             train_loss = 0.0
             #write to tensorboard
-            writer.add_image('training image' + str(i) + '_' + str(epoch), img_grid)
+            #writer.add_images('training image' + str(i) + '_' + str(epoch), img_array)
             # writer.add_figure('figures', plt.imshow(label),close = True)
             writer.close()
     
@@ -161,9 +166,10 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         input_image = sample2["image"].float()
         label = sample2["label"].long()
 
-        output_image = net(input_image)
         
-        loss= criterion(output_image, label.squeeze(0)) 
+        output_image = net(input_image).view(batch_size, 4,32,32,32)
+        
+        loss= criterion(output_image, label)
         valid_loss += loss.item()
    
         if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
@@ -176,11 +182,13 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             print(output_array.shape)
             output_array_max = np.argmax(output_array[0], axis=0)
             print(output_array_max.shape)
-            
+            plot_input = input_image.squeeze()[np.random.randint(32), :,:]
+            plot_label = label.squeeze()[np.random.randint(32), :,:]
+            plot_output = output_array_max[np.random.randint(32), :,:]
             f, (ax1, ax2, ax3) = plt.subplots(1,3)
-            ax1.imshow(output_array_max, cmap = 'viridis')
-            ax2.imshow(label.squeeze().squeeze(), cmap = 'viridis')
-            ax3.imshow(input_image.squeeze().squeeze(), cmap = 'gray')
+            ax1.imshow(plot_output, cmap = 'viridis')
+            ax2.imshow(plot_label, cmap = 'viridis')
+            ax3.imshow(plot_input, cmap = 'gray')
             plt.tight_layout()
             plt.show()
             
@@ -188,11 +196,13 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
                 valid_loss_min = valid_loss/OUTPUT_FREQUENCY
                 torch.save(net.state_dict(), PATH)
             
-            images_together2 = torch.cat((torch.argmax(output_image,1).unsqueeze(1), label, input_image.long()),3)
-            
-            img_grid2 = torchvision.utils.make_grid(images_together2.squeeze(1))
-            
-            writer.add_image('validation image' + str(i) + '_' + str(epoch), img_grid2)
+# =============================================================================
+#             images_together2 = torch.cat((torch.argmax(output_image,1).unsqueeze(1), label, input_image.long()),3)
+#             
+#             img_grid2 = torchvision.utils.make_grid(images_together2.squeeze(1))
+#             
+#             writer.add_image('validation image' + str(i) + '_' + str(epoch), img_grid2)
+# =============================================================================
             
             writer.add_scalar('validation loss', valid_loss /  OUTPUT_FREQUENCY, epoch * len(validation_loader) + j)
             

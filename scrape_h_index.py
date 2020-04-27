@@ -25,6 +25,8 @@ browser = webdriver.Chrome()
 
 h_index =[]
 i10_index = []
+current = []
+subjects = []
 for speaker in speaker_names:
     browser.get('https://scholar.google.de/citations?hl=de&user=6ps6CuwAAAAJ')
     box= browser.find_element_by_id("gs_hdr_sre")
@@ -47,12 +49,24 @@ for speaker in speaker_names:
             list_of_table.append(number.text)
         h_index.append(list_of_table[2])
         i10_index.append(list_of_table[4])
+        
+        current_scrape = browser.find_element_by_class_name('gsc_prf_il')
+        current.append(current_scrape.text)
+        
+        subjects_list = browser.find_element_by_id("gsc_prf_int")
+        subjects.append(subjects_list.text)
     except:
         h_index.append("not found")
         i10_index.append('not found')
-print(h_index,i10_index)
+        current.append('not found')
+        subjects.append('not found')
+        
+        
+print(h_index,i10_index,current)
 data['H index'] = h_index
 data['i10 Index'] = i10_index
+data['Status and Current affiliation'] = current
+data['Subject of speech'] = subjects
 data.to_excel('with_h_index.xlsx')
 #import ipdb; ipdb.set_trace()
 
