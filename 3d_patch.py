@@ -143,18 +143,18 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             #plt.savefig("out/out-%05d.jpg"%(epoch))
 # '''this is for tensorboard, now it works ''' 
 
-            
-            #images_together = torch.cat((torch.argmax(output_image,1).unsqueeze(1), label, input_image.long()),3)
-            
-            #img_grid = torchvision.utils.make_grid([plot_output, plot_label, plot_input])
-            #img_array = np.array([plot_output, plot_label, plot_input])
+            #print('torch.argmax', torch.argmax(output_image[:,:,np.random.randint(32), :,:],1).unsqueeze(1).shape,label[:,np.random.randint(32), :,:].unsqueeze(1).shape,input_image[:,np.random.randint(32), :,:].unsqueeze(1).long().shape)
+            images_together = torch.cat((torch.argmax(output_image[:,:,np.random.randint(32), :,:],1).unsqueeze(1), label[:,np.random.randint(32), :,:].unsqueeze(1), input_image[:,np.random.randint(32), :,:].unsqueeze(1).long()),3)
+            #print('images together', images_together.shape)
+            #img_grid = torchvision.utils.make_grid(images_together)
+            writer.add_images('training image' + str(i) + '_' + str(epoch), images_together)
             # ...log the running loss
             writer.add_scalar('training loss', train_loss / OUTPUT_FREQUENCY, epoch *len(train_loader) + i)
             # ...log a Matplotlib Figure showing the model's predictions on a random mini-batch
             #writer.add_figure('predictions vs. actuals', plot_classes_preds(net, output_image, label), global_step=epoch * len(train_loader) + i)
             train_loss = 0.0
             #write to tensorboard
-            #writer.add_images('training image' + str(i) + '_' + str(epoch), img_array)
+            
             # writer.add_figure('figures', plt.imshow(label),close = True)
             writer.close()
     
@@ -196,13 +196,11 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
                 valid_loss_min = valid_loss/OUTPUT_FREQUENCY
                 torch.save(net.state_dict(), PATH)
             
-# =============================================================================
-#             images_together2 = torch.cat((torch.argmax(output_image,1).unsqueeze(1), label, input_image.long()),3)
-#             
-#             img_grid2 = torchvision.utils.make_grid(images_together2.squeeze(1))
-#             
-#             writer.add_image('validation image' + str(i) + '_' + str(epoch), img_grid2)
-# =============================================================================
+            images_together2 = torch.cat((torch.argmax(output_image[:,:,np.random.randint(32), :,:],1).unsqueeze(1), label[:,np.random.randint(32), :,:].unsqueeze(1), input_image[:,np.random.randint(32), :,:].unsqueeze(1).long()),3)
+            
+            #img_grid2 = torchvision.utils.make_grid(images_together2.squeeze(1))
+            
+            writer.add_images('validation image' + str(i) + '_' + str(epoch),images_together2)
             
             writer.add_scalar('validation loss', valid_loss /  OUTPUT_FREQUENCY, epoch * len(validation_loader) + j)
             
