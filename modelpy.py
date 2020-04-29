@@ -64,20 +64,35 @@ class Net2_5D(nn.Module):
         self.conv2 = nn.Conv2d(8, 16, 5, padding=2)
         
         self.conv3 = nn.Conv2d(16, 32*4, 5, padding=2)
+        self.conv4 = nn.Conv2d(3*4*32, 4*32, 5, padding = 2)
 
     def forward(self, x):
         print('x', x.shape)
+        y = x
+        z = y
         x = F.relu(self.conv1(x))
         print('conv1',x.shape)
         
-# =============================================================================
-#         x = F.max_pool2d(x, (2,2))
-#         print('maxpool', x.shape)
-# =============================================================================
         x = F.relu(self.conv2(x))
         print('conv2',x.shape)
         
         x = self.conv3(x)
         print('conv3',x.shape)
         
+        y = y.permute(0, 2, 3, 1)
+        y = F.relu(self.conv1(y))
+        y = F.relu(self.conv2(y))
+        y = self.conv3(y)
+        y = y.permute(0,1,2,3)
+        
+        z = z.permute(0, 3, 1, 2)
+        z = F.relu(self.conv1(z))
+        z = F.relu(self.conv2(z))
+        z = self.conv3(z)
+        z = z.permute(0,1,2,3)
+        
+        x = torch.cat([x,y,z], 1)
+        x = self.conv4(x)
+        
         return x
+

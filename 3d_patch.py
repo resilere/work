@@ -23,7 +23,7 @@ PATCH_SIZE = [32, 32, 32]
 OUTPUT_FREQUENCY = 5
 MIN_LOSS = 10
 batch_size = 1
-PATH = "/home/eser/work/lstmmodelgpu.pth"
+PATH = "/home/eser/work/3d_model.pth"
 
 INPUT_FILES_TRAIN = (
     (
