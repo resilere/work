@@ -6,7 +6,9 @@ Created on Mon Feb 17 09:27:58 2020
 """
 import modelpy as module
 import numpy as np
+import sys
 import matplotlib.pyplot as plt
+#from mpl_toolkits.mplot3d.axes3d import Axes3D
 import dicom_to_patches as dtp
 import torch
 import torchvision
@@ -15,7 +17,7 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 #from torch.utils.data import ConcatDataset
 #from torch.utils.data.sampler import SubsetRandomSampler
-
+np.set_printoptions(threshold=sys.maxsize)
 
 N_EPOCH = 1
 N_PATCH = 10
@@ -23,17 +25,22 @@ PATCH_SIZE = [32, 32, 32]
 OUTPUT_FREQUENCY = 5
 MIN_LOSS = 10
 batch_size = 1
-PATH = "/home/eser/work/3d_model.pth"
+PATH = "/home/eser/work/3d_model_maybe.pth"
 
 INPUT_FILES_TRAIN = (
     (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_001.nii.gz', 
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_001.nii.gz'
     ),
-          
-    
+(
+        r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
+    )
+   
 )
+
 # =============================================================================
+#           
 # (
 #         r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
 #         r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
@@ -46,16 +53,22 @@ INPUT_FILES_TRAIN = (
 #         r'/home/eser/Task01-BrainTumor/Images/BRATS_004.nii.gz', 
 #         r'/home/eser/Task01-BrainTumor/Labels/BRATS_004.nii.gz'
 #     ),
-#(
+# =============================================================================
+# =============================================================================
+# 
+#  (
+# 
 #        r'/home/eser/Task01-BrainTumor/Images/BRATS_006.nii.gz', 
 #        r'/home/eser/Task01-BrainTumor/Labels/BRATS_006.nii.gz'
-#    ),
+#    )
 # =============================================================================
+
 INPUT_FILES_VALIDATION = (
     (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_005.nii.gz', 
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_005.nii.gz'
-    ),
+    ), 
+   
     
 )
 
@@ -102,11 +115,29 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
     
         # zero the parameter gradients
         optimizer.zero_grad()
-
+        print('input image', input_image.shape)
+        
+        """here is temporary code to show input image patches"""
+        fig, axes = plt.subplots(nrows = 2, ncols = 8)
+        fig.set_figheight(4)
+        fig.set_figwidth(32)
+        slice_indices = range(0, 32, 4)
+        for ind in range(8):
+            input_slices = input_image.squeeze()[slice_indices[ind], :, :]
+            axes[0,ind].imshow(input_slices, cmap = 'gray')
+                
+            axes[0, ind].axis('off')
+           
+            label_slices = label.squeeze()[slice_indices[ind], :,:]
+            axes[1,ind].imshow(label_slices, cmap = 'viridis')
+            axes[1, ind].axis('off')
+            
+        plt.show()
         # forward + backward + optimize. 
         # @c: split the outputchannels in image direction in x -32- and segmentation classes -4-
         output_image = net(input_image).view(batch_size, 4,32,32,32)
-        
+        print('output and label', output_image.shape, label.shape)
+        print('output_image', output_image[0, :, 16, 16, 16])
         #import ipdb; ipdb.set_trace() @c: squeeze is shouldnt be neccesary anymore
         loss= criterion(output_image, label)
         
@@ -121,21 +152,26 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             print('[%d, %5d] train loss: %.3f' %
                   (epoch + 1, i + 1, train_loss / OUTPUT_FREQUENCY))
             
+            random_slice = np.random.randint(32)
             
-            
-            output_array = output_image.detach().numpy()
-            print(output_array.shape)
-            output_array_max = np.argmax(output_array[0], axis=0)
-            print(output_array_max.shape)
-            print('label', label.shape)
-            print('input',input_image.shape)
-            plot_input = input_image.squeeze()[np.random.randint(32), :,:]
-            plot_label = label.squeeze()[np.random.randint(32), :,:]
-            plot_output = output_array_max[np.random.randint(32), :,:]
+            #output_array = output_image.detach().numpy()
+            #print(output_array.shape)
+            #print('output array without batch size and first dim', output_array[0,random_slice])
+            #print('random slice no : ', random_slice)
+            #output_array_max = np.argmax(output_array[0], axis=0)
+            output_array_max = torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
+            #print('output_arry_max', output_array_max)
+            #print('label', label.shape)
+            #print('input',input_image.shape)
+            plot_input = input_image.squeeze()[random_slice, :,:]
+            plot_label = label.squeeze()[random_slice, :,:]
+            plot_output = output_array_max[random_slice, :,:]
+            #print('plot outputand label', plot_output, plot_label)
             #label = label.detach().numpy()[:, ::-1, :, :]
             #input_array = inputs.detach().numpy()[:, ::-1, :, :]
             f, (ax1, ax2, ax3) = plt.subplots(1,3)
             ax1.imshow(plot_output , cmap = 'coolwarm')
+            ax1.set_title('slice: %d, loss : %.3f ' % (random_slice, train_loss / OUTPUT_FREQUENCY))
             ax2.imshow(plot_label, cmap = 'coolwarm')
             ax3.imshow(plot_input, cmap = 'gray')
             plt.tight_layout()
@@ -177,21 +213,34 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             print('[%d, %5d] validation loss: %.3f' %
                   (epoch + 1, j + 1, valid_loss /  OUTPUT_FREQUENCY))
             
-                        
+            random_slice2 = np.random.randint(32)
+            
             output_array = output_image.detach().numpy()
-            print(output_array.shape)
+            #print(output_array.shape)
             output_array_max = np.argmax(output_array[0], axis=0)
-            print(output_array_max.shape)
-            plot_input = input_image.squeeze()[np.random.randint(32), :,:]
-            plot_label = label.squeeze()[np.random.randint(32), :,:]
-            plot_output = output_array_max[np.random.randint(32), :,:]
-            f, (ax1, ax2, ax3) = plt.subplots(1,3)
-            ax1.imshow(plot_output, cmap = 'viridis')
-            ax2.imshow(plot_label, cmap = 'viridis')
-            ax3.imshow(plot_input, cmap = 'gray')
-            plt.tight_layout()
+            #print(output_array_max.shape)
+
+            
+            fig, axes = plt.subplots(nrows = 3, ncols = 8)
+            fig.set_figheight(12)
+            fig.set_figwidth(32)
+            slice_indices = range(0, 33, 4)
+            for ind in range(8):
+                output_slices = output_array_max[slice_indices[ind], :, :]
+                axes[0,ind].imshow(output_slices, cmap = 'viridis')
+                
+                axes[0, ind].axis('off')
+                label_slices = label.squeeze()[slice_indices[ind], :,:]
+                axes[1,ind].imshow(label_slices, cmap = 'viridis')
+                axes[1, ind].axis('off')
+                input_slices = input_image.squeeze()[slice_indices[ind], :, :]
+                axes[2,ind].imshow(input_slices, cmap = 'gray')
+                axes[2, ind].axis('off')
+                
+            
             plt.show()
             
+
             if valid_loss/OUTPUT_FREQUENCY < valid_loss_min:
                 valid_loss_min = valid_loss/OUTPUT_FREQUENCY
                 torch.save(net.state_dict(), PATH)

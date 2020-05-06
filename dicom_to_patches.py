@@ -44,7 +44,7 @@ class data_patches(Dataset):
             x_random = np.random.choice(image_shape[0]-patch_size[0]+1, 1)
             y_random = np.random.choice(image_shape[1]-patch_size[1]+1, 1)
             z_random = np.random.choice(image_shape[2]-patch_size[2]+1, 1)
-            while np.max(self.label[x_random[0],y_random[0]: y_random[0] + patch_size[1],z_random[0]:z_random[0]+ patch_size[2]]) == 0:
+            while np.max(self.label[x_random[0]: x_random[0] + patch_size[0],y_random[0]: y_random[0] + patch_size[1],z_random[0]:z_random[0]+ patch_size[2]]) == 0:
                 x_random = np.random.choice(image_shape[0]-patch_size[0]+1, 1)
                 y_random = np.random.choice(image_shape[1]-patch_size[1]+1, 1)
                 z_random = np.random.choice(image_shape[2]-patch_size[2]+1, 1)

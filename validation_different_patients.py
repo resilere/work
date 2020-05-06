@@ -17,13 +17,13 @@ from torch.utils.tensorboard import SummaryWriter
 #from torch.utils.data.sampler import SubsetRandomSampler
 
 
-N_EPOCH = 1
-N_PATCH = 10
+N_EPOCH = 5
+N_PATCH = 100
 PATCH_SIZE = [1, 32, 32]
-OUTPUT_FREQUENCY = 5
+OUTPUT_FREQUENCY = 50
 MIN_LOSS = 10
 batch_size = 1
-PATH = "/home/eser/work/lstmmodelgpu.pth"
+PATH = "/home/eser/work/with2dpatch.pth"
 
 INPUT_FILES_TRAIN = (
     (
@@ -31,31 +31,31 @@ INPUT_FILES_TRAIN = (
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_001.nii.gz'
     ),
           
-    
+(
+        r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
+    ),
+    (
+        r'/home/eser/Task01-BrainTumor/Images/BRATS_003.nii.gz', 
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_003.nii.gz'
+    ),
+    (
+        r'/home/eser/Task01-BrainTumor/Images/BRATS_004.nii.gz', 
+        r'/home/eser/Task01-BrainTumor/Labels/BRATS_004.nii.gz'
+    ),
+   
 )
-# =============================================================================
-# (
-#         r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
-#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
-#     ),
-#     (
-#         r'/home/eser/Task01-BrainTumor/Images/BRATS_003.nii.gz', 
-#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_003.nii.gz'
-#     ),
-#     (
-#         r'/home/eser/Task01-BrainTumor/Images/BRATS_004.nii.gz', 
-#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_004.nii.gz'
-#     ),
-#(
-#        r'/home/eser/Task01-BrainTumor/Images/BRATS_006.nii.gz', 
-#        r'/home/eser/Task01-BrainTumor/Labels/BRATS_006.nii.gz'
-#    ),
-# =============================================================================
+
 INPUT_FILES_VALIDATION = (
     (
         r'/home/eser/Task01-BrainTumor/Images/BRATS_005.nii.gz', 
         r'/home/eser/Task01-BrainTumor/Labels/BRATS_005.nii.gz'
-    ),
+    ), 
+    (
+
+       r'/home/eser/Task01-BrainTumor/Images/BRATS_006.nii.gz', 
+       r'/home/eser/Task01-BrainTumor/Labels/BRATS_006.nii.gz'
+   )
     
 )
 
@@ -105,7 +105,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 
         # forward + backward + optimize
         output_image = net(input_image)
-        
+        print('output and label', output_image.shape, label.shape)
         
         loss= criterion(output_image, label.squeeze(0) )
         
