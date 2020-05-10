@@ -81,7 +81,7 @@ train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
 validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=batch_size,
                                                )
 
-net = module.Net2_5D()
+net = module.Net_new()
 net.train()
 #import ipdb; ipdb.set_trace()
 
