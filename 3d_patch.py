@@ -19,10 +19,10 @@ from torch.utils.tensorboard import SummaryWriter
 #from torch.utils.data.sampler import SubsetRandomSampler
 np.set_printoptions(threshold=sys.maxsize)
 
-N_EPOCH = 1
-N_PATCH = 10
+N_EPOCH = 100
+N_PATCH = 500
 PATCH_SIZE = [32, 32, 32]
-OUTPUT_FREQUENCY = 5
+OUTPUT_FREQUENCY = 100
 MIN_LOSS = 10
 batch_size = 1
 PATH = "/home/eser/work/3d_model_maybe.pth"
@@ -81,12 +81,14 @@ train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
 validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=batch_size,
                                                )
 
-net = module.Net_new()
+net = module.Net2_5D()
+#net.load_state_dict(torch.load(PATH))
+
 net.train()
 #import ipdb; ipdb.set_trace()
-
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(net.parameters(), lr=0.0001)
+weights = torch.FloatTensor([0.5, 5.0, 5.0, 5.0])
+criterion = nn.CrossEntropyLoss(weight = weights)
+optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 '''this is for tensorboard '''
 writer = SummaryWriter('runs/brain_images')
@@ -115,32 +117,22 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
     
         # zero the parameter gradients
         optimizer.zero_grad()
-        print('input image', input_image.shape)
         
-        """here is temporary code to show input image patches"""
-        fig, axes = plt.subplots(nrows = 2, ncols = 8)
-        fig.set_figheight(4)
-        fig.set_figwidth(32)
-        slice_indices = range(0, 32, 4)
-        for ind in range(8):
-            input_slices = input_image.squeeze()[slice_indices[ind], :, :]
-            axes[0,ind].imshow(input_slices, cmap = 'gray')
-                
-            axes[0, ind].axis('off')
-           
-            label_slices = label.squeeze()[slice_indices[ind], :,:]
-            axes[1,ind].imshow(label_slices, cmap = 'viridis')
-            axes[1, ind].axis('off')
-            
-        plt.show()
         # forward + backward + optimize. 
         # @c: split the outputchannels in image direction in x -32- and segmentation classes -4-
         output_image = net(input_image).view(batch_size, 4,32,32,32)
-        print('output and label', output_image.shape, label.shape)
-        print('output_image', output_image[0, :, 16, 16, 16])
+# =============================================================================
+#         print('output and label', output_image.shape, label.shape)
+#         print('output_image', output_image[0, :, 16, 16, 16])
+#         
+#         print('input image', input_image.shape)
+# =============================================================================
+        
+        
+        
         #import ipdb; ipdb.set_trace() @c: squeeze is shouldnt be neccesary anymore
         loss= criterion(output_image, label)
-        
+        #print(loss)
         loss.backward()
         optimizer.step()
         
@@ -154,28 +146,48 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             
             random_slice = np.random.randint(32)
             
-            #output_array = output_image.detach().numpy()
-            #print(output_array.shape)
-            #print('output array without batch size and first dim', output_array[0,random_slice])
-            #print('random slice no : ', random_slice)
-            #output_array_max = np.argmax(output_array[0], axis=0)
+            
             output_array_max = torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
-            #print('output_arry_max', output_array_max)
-            #print('label', label.shape)
-            #print('input',input_image.shape)
-            plot_input = input_image.squeeze()[random_slice, :,:]
-            plot_label = label.squeeze()[random_slice, :,:]
-            plot_output = output_array_max[random_slice, :,:]
-            #print('plot outputand label', plot_output, plot_label)
-            #label = label.detach().numpy()[:, ::-1, :, :]
-            #input_array = inputs.detach().numpy()[:, ::-1, :, :]
-            f, (ax1, ax2, ax3) = plt.subplots(1,3)
-            ax1.imshow(plot_output , cmap = 'coolwarm')
-            ax1.set_title('slice: %d, loss : %.3f ' % (random_slice, train_loss / OUTPUT_FREQUENCY))
-            ax2.imshow(plot_label, cmap = 'coolwarm')
-            ax3.imshow(plot_input, cmap = 'gray')
-            plt.tight_layout()
+            
+            
+            """here is temporary code to show inout and output image patches"""
+            fig, axes = plt.subplots(nrows = 3, ncols = 8)
+            fig.set_figheight(12)
+            fig.set_figwidth(32)
+            slice_indices = range(0, 33, 4)
+            for ind in range(8):
+                output_slices = output_array_max.squeeze()[slice_indices[ind], :, :]
+                axes[0,ind].imshow(output_slices, cmap = 'coolwarm')
+                    
+                axes[0, ind].axis('off')
+                
+                label_slices = label.squeeze()[slice_indices[ind], :,:]
+                axes[1,ind].imshow(label_slices, cmap = 'coolwarm')
+                axes[1, ind].axis('off')
+                
+                input_slices = input_image.squeeze()[slice_indices[ind], :, :]
+                axes[2,ind].imshow(input_slices, cmap = 'gray')
+                    
+                axes[2, ind].axis('off')
+               
             plt.show()
+            
+            
+# =============================================================================
+#             plot_input = input_image.squeeze()[random_slice, :,:]
+#             plot_label = label.squeeze()[random_slice, :,:]
+#             plot_output = output_array_max[random_slice, :,:]
+#             #print('plot outputand label', plot_output, plot_label)
+#             #label = label.detach().numpy()[:, ::-1, :, :]
+#             #input_array = inputs.detach().numpy()[:, ::-1, :, :]
+#             f, (ax1, ax2, ax3) = plt.subplots(1,3)
+#             ax1.imshow(plot_output , cmap = 'coolwarm')
+#             ax1.set_title('slice: %d, loss : %.3f ' % (random_slice, train_loss / OUTPUT_FREQUENCY))
+#             ax2.imshow(plot_label, cmap = 'coolwarm')
+#             ax3.imshow(plot_input, cmap = 'gray')
+#             plt.tight_layout()
+#             plt.show()
+# =============================================================================
             #plt.savefig("out/out-%05d.jpg"%(epoch))
 # '''this is for tensorboard, now it works ''' 
 
@@ -215,9 +227,9 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             
             random_slice2 = np.random.randint(32)
             
-            output_array = output_image.detach().numpy()
+           
             #print(output_array.shape)
-            output_array_max = np.argmax(output_array[0], axis=0)
+            output_array_max =  torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
             #print(output_array_max.shape)
 
             

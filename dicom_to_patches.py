@@ -61,22 +61,7 @@ class data_patches(Dataset):
     def __getitem__(self, idx):
         image_patch = view_as_windows(self.image,self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
         label_patch = view_as_windows(self.label, self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
-        print('image_patch size', image_patch.shape)
-        """this is for triplanar cnn"""
-        print('self.index_list[0][idx]', self.index_list[0][idx])
-        
-        yz_plane = image_patch[int(self.index_list[0][idx]+(self.patch_size[0]/2)),:, :]
-        xz_plane = image_patch[:,int(self.index_list[1][idx]+(self.patch_size[1]/2)), :]
-        xy_plane = image_patch[:,:,int( self.index_list[2][idx]+(self.patch_size[2]/2))]
-        image_with_3_planes = [yz_plane, xz_plane, xy_plane]
-        
-        yz_plane_label = label_patch[int(self.index_list[0][idx]+(self.patch_size[0]/2)),:, :]
-        xz_plane_label = label_patch[:,int(self.index_list[1][idx]+(self.patch_size[1]/2)), :]
-        xy_plane_label = label_patch[:,:,int( self.index_list[2][idx]+(self.patch_size[2]/2))]
-        label_with_3_planes = [yz_plane_label, xz_plane_label, xy_plane_label]
-        
-        
-        sample = {"image":image_with_3_planes, "label":label_with_3_planes.astype(np.int_)}
+        sample = {"image":image_patch, "label":label_patch.astype(np.int_)}
         
         return sample
     def crop_image_only_outside(self, tol=0):

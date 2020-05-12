@@ -60,10 +60,10 @@ class Net2_5D(nn.Module):
     
     def __init__(self):
         super(Net2_5D, self).__init__()
-        self.conv1 = nn.Conv2d(32, 8, 5, padding=2)
-        self.conv2 = nn.Conv2d(8, 16, 5, padding=2)
+        self.conv1 = nn.Conv2d(32, 64, 5, padding=2)
+        self.conv2 = nn.Conv2d(64, 80, 5, padding=2)
         
-        self.conv3 = nn.Conv2d(16, 32*4, 5, padding=2)
+        self.conv3 = nn.Conv2d(80, 32*4, 5, padding=2)
         self.conv4 = nn.Conv2d(3*4*32, 4*32, 5, padding = 2)
 
     def forward(self, x):
