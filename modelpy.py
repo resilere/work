@@ -60,10 +60,10 @@ class Net2_5D(nn.Module):
     
     def __init__(self):
         super(Net2_5D, self).__init__()
-        self.conv1 = nn.Conv2d(32, 8, 5, padding=2)
-        self.conv2 = nn.Conv2d(8, 16, 5, padding=2)
+        self.conv1 = nn.Conv2d(32, 64, 5, padding=2)
+        self.conv2 = nn.Conv2d(64, 80, 5, padding=2)
         
-        self.conv3 = nn.Conv2d(16, 32*4, 5, padding=2)
+        self.conv3 = nn.Conv2d(80, 32*4, 5, padding=2)
         self.conv4 = nn.Conv2d(3*4*32, 4*32, 5, padding = 2)
 
     def forward(self, x):
@@ -104,11 +104,37 @@ class Net_new(nn.Module):
         self.conv3 = nn.Conv2d(16, 4, 5, padding= 2)
         
     def forward(self, x):
+        x1 = x[0] #yz plane
+        x1 = F.relu(self.conv1(x1))
         
-        x = F.relu(self.conv1(x))
+        x1 = F.max_pool2d(x1, (2,2))
         
-        x = F.max_pool2d(x, (2,2))
+        x1 = F.relu(self.conv2(x1))
         
-        x = F.relu(self.conv2(x))
+        x1 = F.max_pool2d(x1, (2,2))
         
-        x = F.max_pool2d(x, (2,2))
+        x2 = x[1] #xz plane
+        
+        x2 = F.relu(self.conv1(x2))
+        
+        x2 = F.max_pool2d(x2, (2,2))
+        
+        x2 = F.relu(self.conv2(x2))
+        
+        x2 = F.max_pool2d(x2, (2,2))
+        
+        x3 = x[2] #xy plane
+        
+        x3 = F.relu(self.conv1(x3))
+        
+        x3 = F.max_pool2d(x3, (2,2))
+        
+        x3 = F.relu(self.conv2(x3))
+        
+        x3 = F.max_pool2d(x3, (2,2))
+        
+        merged = torch.cat([x1,x2,x3], 1)
+        
+        print('merged shape', merged.shape)
+        return merged
+        
