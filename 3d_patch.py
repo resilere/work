@@ -19,28 +19,36 @@ from torch.utils.tensorboard import SummaryWriter
 #from torch.utils.data.sampler import SubsetRandomSampler
 np.set_printoptions(threshold=sys.maxsize)
 
-N_EPOCH = 100
-N_PATCH = 500
+N_EPOCH = 1
+N_PATCH = 10
+OUTPUT_FREQUENCY = 5
 PATCH_SIZE = [32, 32, 32]
-OUTPUT_FREQUENCY = 100
 MIN_LOSS = 10
 batch_size = 1
-PATH = "/home/eser/work/3d_model_maybe.pth"
+PATH = "/home/eser/path_files_for_code/3d_model_orca.pth"
 
 INPUT_FILES_TRAIN = (
     (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_001.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_001.nii.gz'
-    ),
-(
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
-    )
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P1CTAI.mhd',
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P1R.mhd'
+     ),
+    (
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P2CTAI.mhd',
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P2R.mhd'
+     )
+    
    
 )
-
 # =============================================================================
-#           
+# 
+#          (
+#         r'/home/eser/Task01-BrainTumor/Images/BRATS_001.nii.gz', 
+#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_001.nii.gz'
+#     ),
+# (
+#         r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
+#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
+#     ) 
 # (
 #         r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
 #         r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
@@ -54,24 +62,28 @@ INPUT_FILES_TRAIN = (
 #         r'/home/eser/Task01-BrainTumor/Labels/BRATS_004.nii.gz'
 #     ),
 # =============================================================================
+
 # =============================================================================
-# 
 #  (
 # 
 #        r'/home/eser/Task01-BrainTumor/Images/BRATS_006.nii.gz', 
 #        r'/home/eser/Task01-BrainTumor/Labels/BRATS_006.nii.gz'
 #    )
+#  (
+#         r'/home/eser/Task01-BrainTumor/Images/BRATS_005.nii.gz', 
+#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_005.nii.gz'
+#     ), 
+#    
 # =============================================================================
 
 INPUT_FILES_VALIDATION = (
-    (
-        r'/home/eser/Task01-BrainTumor/Images/BRATS_005.nii.gz', 
-        r'/home/eser/Task01-BrainTumor/Labels/BRATS_005.nii.gz'
-    ), 
-   
+   (
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P3CTAI.mhd',
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P3R.mhd'
+     ) 
     
 )
-
+#import pdb;pdb.set_trace()
 train_data = dtp.concat_datasets(INPUT_FILES_TRAIN, N_PATCH, PATCH_SIZE)
 validation_data = dtp.concat_datasets(INPUT_FILES_VALIDATION, N_PATCH, PATCH_SIZE)
 
@@ -89,6 +101,7 @@ net.train()
 weights = torch.FloatTensor([0.5, 5.0, 5.0, 5.0])
 criterion = nn.CrossEntropyLoss(weight = weights)
 optimizer = optim.Adam(net.parameters(), lr=0.001)
+
 
 '''this is for tensorboard '''
 writer = SummaryWriter('runs/brain_images')
