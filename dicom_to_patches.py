@@ -37,17 +37,16 @@ class data_patches(Dataset):
         '''generates random indexes for one file, taking only the positive values in label file'''
         
         image_shape = self.image.shape
-          
-        x_label_positive =[]
-        y_label_positive =[]
-        z_label_positive =[]
-        
-        for i in range(number_patches):
-            x_random = np.random.choice(image_shape[0]-patch_size[0]+1, 1)
-            y_random = np.random.choice(image_shape[1]-patch_size[1]+1, 1)
-            z_random = np.random.choice(image_shape[2]-patch_size[2]+1, 1)
-            print('x, y, z rand', x_random, y_random, z_random)
-            try :
+        if np.max(self.label) != 0: 
+            x_label_positive =[]
+            y_label_positive =[]
+            z_label_positive =[]
+            
+            for i in range(number_patches):
+                x_random = np.random.choice(image_shape[0]-patch_size[0]+1, 1)
+                y_random = np.random.choice(image_shape[1]-patch_size[1]+1, 1)
+                z_random = np.random.choice(image_shape[2]-patch_size[2]+1, 1)
+                #print('x, y, z rand', x_random, y_random, z_random)
                 
                 while np.max(self.label[x_random[0]: x_random[0] + patch_size[0],y_random[0]: y_random[0] + patch_size[1],z_random[0]:z_random[0]+ patch_size[2]]) == 0:
                     x_random = np.random.choice(image_shape[0]-patch_size[0]+1, 1)
@@ -57,8 +56,8 @@ class data_patches(Dataset):
                 y_label_positive.append(y_random[0])
                 z_label_positive.append(z_random[0])
                 index_list = [x_label_positive,y_label_positive,z_label_positive]
-            except :
-                index_list = [[np.random.randint(low=1, high=(image_shape[0]-patch_size[0]+1), size= number_patches)], 
+        else:  
+            index_list = [[np.random.randint(low=1, high=(image_shape[0]-patch_size[0]+1), size= number_patches)], 
                               [np.random.randint(low=1, high=(image_shape[1]-patch_size[1]+1), size= number_patches)],
                               [np.random.randint(low=1, high=(image_shape[2]-patch_size[2]+1), size= number_patches)]
                               ]
@@ -71,6 +70,8 @@ class data_patches(Dataset):
 
 
     def __getitem__(self, idx):
+        print('idx', idx)
+        print('self.index_list[0][idx]', self.index_list[0][idx])
         image_patch = view_as_windows(self.image,self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
         label_patch = view_as_windows(self.label, self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
         sample = {"image":image_patch, "label":label_patch.astype(np.int_)}
