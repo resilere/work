@@ -132,7 +132,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
     
         # zero the parameter gradients
         optimizer.zero_grad()
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         # forward + backward + optimize. 
         # @c: split the outputchannels in image direction in x -32- and segmentation classes -4-
         output_image = net(input_image).view(batch_size, 2,32,32,32)
