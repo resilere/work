@@ -29,7 +29,7 @@ PATH = "/home/eser/path_files_for_code/3d_model_orca.pth"
 
 INPUT_FILES_TRAIN = (
     (
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P1CTAI.mhd',
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P1CTI.mhd',
      r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P1R.mhd'
      ),
     (
@@ -78,12 +78,12 @@ INPUT_FILES_TRAIN = (
 
 INPUT_FILES_VALIDATION = (
    (
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P3CTAI.mhd',
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P3CTI.mhd',
      r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P3R.mhd'
-     ) 
+     ), 
     
 )
-#import pdb;pdb.set_trace()
+
 train_data = dtp.concat_datasets(INPUT_FILES_TRAIN, N_PATCH, PATCH_SIZE)
 validation_data = dtp.concat_datasets(INPUT_FILES_VALIDATION, N_PATCH, PATCH_SIZE)
 
@@ -98,8 +98,8 @@ net = module.Net2_5D()
 
 net.train()
 #import ipdb; ipdb.set_trace()
-weights = torch.FloatTensor([0.5, 5.0, 5.0, 5.0])
-criterion = nn.CrossEntropyLoss(weight = weights)
+#weights = torch.FloatTensor([0.5, 5.0, 5.0, 5.0])
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 
@@ -116,24 +116,26 @@ def plot_classes_preds(net, images, labels):
     
 
 '''this is where the training begins''' 
-valid_loss_min = MIN_LOSS   
+valid_loss_min = MIN_LOSS  
+
+ 
 for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 
     train_loss = 0.0
     valid_loss = 0.0
     
     for i, sample in enumerate(train_loader, 0):
-  
+        
         # get the inputs; data is a list of [inputs, labels]
         input_image = sample["image"].float()
         label = sample["label"].long()
     
         # zero the parameter gradients
         optimizer.zero_grad()
-        
+        import pdb; pdb.set_trace()
         # forward + backward + optimize. 
         # @c: split the outputchannels in image direction in x -32- and segmentation classes -4-
-        output_image = net(input_image).view(batch_size, 4,32,32,32)
+        output_image = net(input_image).view(batch_size, 2,32,32,32)
 # =============================================================================
 #         print('output and label', output_image.shape, label.shape)
 #         print('output_image', output_image[0, :, 16, 16, 16])
