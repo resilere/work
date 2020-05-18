@@ -57,9 +57,9 @@ class data_patches(Dataset):
                 z_label_positive.append(z_random[0])
                 index_list = [x_label_positive,y_label_positive,z_label_positive]
         else:  
-            index_list = [[np.random.randint(low=1, high=(image_shape[0]-patch_size[0]+1), size= number_patches)], 
-                              [np.random.randint(low=1, high=(image_shape[1]-patch_size[1]+1), size= number_patches)],
-                              [np.random.randint(low=1, high=(image_shape[2]-patch_size[2]+1), size= number_patches)]
+            index_list = [np.random.randint(low=1, high=(image_shape[0]-patch_size[0]+1), size= number_patches), 
+                              np.random.randint(low=1, high=(image_shape[1]-patch_size[1]+1), size= number_patches),
+                              np.random.randint(low=1, high=(image_shape[2]-patch_size[2]+1), size= number_patches)
                               ]
             
         

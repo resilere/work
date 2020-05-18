@@ -33,48 +33,12 @@ INPUT_FILES_TRAIN = (
      r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P1R.mhd'
      ),
     (
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P2CTAI.mhd',
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P2CTI.mhd',
      r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P2R.mhd'
      )
     
    
 )
-# =============================================================================
-# 
-#          (
-#         r'/home/eser/Task01-BrainTumor/Images/BRATS_001.nii.gz', 
-#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_001.nii.gz'
-#     ),
-# (
-#         r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
-#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
-#     ) 
-# (
-#         r'/home/eser/Task01-BrainTumor/Images/BRATS_002.nii.gz', 
-#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_002.nii.gz'
-#     ),
-#     (
-#         r'/home/eser/Task01-BrainTumor/Images/BRATS_003.nii.gz', 
-#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_003.nii.gz'
-#     ),
-#     (
-#         r'/home/eser/Task01-BrainTumor/Images/BRATS_004.nii.gz', 
-#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_004.nii.gz'
-#     ),
-# =============================================================================
-
-# =============================================================================
-#  (
-# 
-#        r'/home/eser/Task01-BrainTumor/Images/BRATS_006.nii.gz', 
-#        r'/home/eser/Task01-BrainTumor/Labels/BRATS_006.nii.gz'
-#    )
-#  (
-#         r'/home/eser/Task01-BrainTumor/Images/BRATS_005.nii.gz', 
-#         r'/home/eser/Task01-BrainTumor/Labels/BRATS_005.nii.gz'
-#     ), 
-#    
-# =============================================================================
 
 INPUT_FILES_VALIDATION = (
    (
@@ -97,7 +61,7 @@ net = module.Net2_5D()
 #net.load_state_dict(torch.load(PATH))
 
 net.train()
-#import ipdb; ipdb.set_trace()
+
 #weights = torch.FloatTensor([0.5, 5.0, 5.0, 5.0])
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
@@ -135,7 +99,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         #import pdb; pdb.set_trace()
         # forward + backward + optimize. 
         # @c: split the outputchannels in image direction in x -32- and segmentation classes -4-
-        output_image = net(input_image).view(batch_size, 2,32,32,32)
+        output_image = net(input_image).view(batch_size, 4,32,32,32)
 # =============================================================================
 #         print('output and label', output_image.shape, label.shape)
 #         print('output_image', output_image[0, :, 16, 16, 16])
@@ -240,8 +204,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             print('[%d, %5d] validation loss: %.3f' %
                   (epoch + 1, j + 1, valid_loss /  OUTPUT_FREQUENCY))
             
-            random_slice2 = np.random.randint(32)
-            
+               
            
             #print(output_array.shape)
             output_array_max =  torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
@@ -283,19 +246,6 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             valid_loss = 0.0
             writer.close()
 
-
-# =============================================================================
-# # Print model's state_dict
-# print("Model's state_dict:")
-# for param_tensor in net.state_dict():
-#     print(param_tensor, "\t", net.state_dict()[param_tensor].size())
-# 
-# # Print optimizer's state_dict
-# print("Optimizer's state_dict:")
-# for var_name in optimizer.state_dict():
-#     print(var_name, "\t", optimizer.state_dict()[var_name])
-# 
-# =============================================================================
-            
+          
 
 
