@@ -62,8 +62,8 @@ net = module.Net2_5D()
 
 net.train()
 
-#weights = torch.FloatTensor([0.5, 5.0, 5.0, 5.0])
-criterion = nn.CrossEntropyLoss()
+weights = torch.FloatTensor([0.5, 5.0])
+criterion = nn.CrossEntropyLoss(weight = weights)
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 

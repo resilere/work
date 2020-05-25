@@ -41,7 +41,7 @@ class data_patches(Dataset):
             x_label_positive =[]
             y_label_positive =[]
             z_label_positive =[]
-            
+            print('the label has positive')
             for i in range(number_patches):
                 x_random = np.random.choice(image_shape[0]-patch_size[0]+1, 1)
                 y_random = np.random.choice(image_shape[1]-patch_size[1]+1, 1)
