@@ -21,7 +21,7 @@ class data_patches(Dataset):
         self.patch_size = None
         self.image = dcr.nifti_to_array(image_file_path) #ändern wenn image file ein dicom ist
         self.label = dcr.nifti_to_array(label_file_path)
-        
+        self.label = np.where(self.label > 0, 1, 0)
         
     
     def threshold(self, array, threshold):
@@ -104,14 +104,14 @@ def concat_datasets(input_files_list, N_PATCH, PATCH_SIZE ):
     '''concatenates multiple datasets into one dataset'''
     datasets= []
     for image_file, label_file in input_files_list:
-
+        
         data = data_patches(image_file, label_file)
                 
         data.crop_image_only_outside()
         print("Loaded %s, image shape: %s"%(image_file, str(data.image.shape)))
     
         data.random_index(PATCH_SIZE, N_PATCH)
-    
+        
         datasets.append(data)
     
     return ConcatDataset(datasets)

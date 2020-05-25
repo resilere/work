@@ -64,7 +64,7 @@ class Net2_5D(nn.Module):
         self.conv2 = nn.Conv2d(64, 80, 5, padding=2)
         
         self.conv3 = nn.Conv2d(80, 32*4, 5, padding=2)
-        self.conv4 = nn.Conv2d(3*4*32, 4*32, 5, padding = 2)
+        self.conv4 = nn.Conv2d(3*4*32, 2*32, 5, padding = 2)
 
     def forward(self, x):
         #print('x', x.shape)

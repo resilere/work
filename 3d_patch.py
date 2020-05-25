@@ -29,12 +29,12 @@ PATH = "/home/eser/path_files_for_code/3d_model_orca.pth"
 
 INPUT_FILES_TRAIN = (
     (
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P1CTI.mhd',
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P1R.mhd'
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P3CTI.mhd',
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P3R.mhd'
      ),
     (
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P2CTI.mhd',
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P2R.mhd'
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P4CTI.mhd',
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P4R.mhd'
      )
     
    
@@ -42,8 +42,8 @@ INPUT_FILES_TRAIN = (
 
 INPUT_FILES_VALIDATION = (
    (
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P3CTI.mhd',
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P3R.mhd'
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P5CTI.mhd',
+     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P5R.mhd'
      ), 
     
 )
@@ -99,7 +99,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         #import pdb; pdb.set_trace()
         # forward + backward + optimize. 
         # @c: split the outputchannels in image direction in x -32- and segmentation classes -4-
-        output_image = net(input_image).view(batch_size, 4,32,32,32)
+        output_image = net(input_image).view(batch_size, 2,32,32,32)
 # =============================================================================
 #         print('output and label', output_image.shape, label.shape)
 #         print('output_image', output_image[0, :, 16, 16, 16])
@@ -194,7 +194,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         label = sample2["label"].long()
 
         
-        output_image = net(input_image).view(batch_size, 4,32,32,32)
+        output_image = net(input_image).view(batch_size, 2,32,32,32)
         
         loss= criterion(output_image, label)
         valid_loss += loss.item()
