@@ -62,8 +62,9 @@ net = module.Net2_5D()
 
 net.train()
 
-weights = torch.FloatTensor([0.5, 5.0])
-criterion = nn.CrossEntropyLoss(weight = weights)
+#weights = torch.FloatTensor([0.5, 5.0])
+#criterion = nn.CrossEntropyLoss(weight = weights)
+
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 
@@ -93,7 +94,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         # get the inputs; data is a list of [inputs, labels]
         input_image = sample["image"].float()
         label = sample["label"].long()
-    
+        print('label max:', np.max(label.numpy()))
         # zero the parameter gradients
         optimizer.zero_grad()
         #import pdb; pdb.set_trace()
@@ -107,10 +108,11 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 #         print('input image', input_image.shape)
 # =============================================================================
         
+        """this is to try dice loss function"""
         
         
-        #import ipdb; ipdb.set_trace() @c: squeeze is shouldnt be neccesary anymore
-        loss= criterion(output_image, label)
+        #import ipdb; ipdb.set_trace() 
+        loss= module.dice_loss(output_image, label)
         #print(loss)
         loss.backward()
         optimizer.step()
@@ -130,26 +132,29 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             
             
             """here is temporary code to show inout and output image patches"""
-            fig, axes = plt.subplots(nrows = 3, ncols = 8)
-            fig.set_figheight(12)
-            fig.set_figwidth(32)
-            slice_indices = range(0, 33, 4)
-            for ind in range(8):
-                output_slices = output_array_max.squeeze()[slice_indices[ind], :, :]
-                axes[0,ind].imshow(output_slices, cmap = 'coolwarm')
-                    
-                axes[0, ind].axis('off')
+            slice_indices = np.arange(0, 29, 4)
+            for i in range(4):
+                fig, axes = plt.subplots(nrows = 3, ncols = 8)
+                fig.set_figheight(12)
+                fig.set_figwidth(32)
                 
-                label_slices = label.squeeze()[slice_indices[ind], :,:]
-                axes[1,ind].imshow(label_slices, cmap = 'coolwarm')
-                axes[1, ind].axis('off')
-                
-                input_slices = input_image.squeeze()[slice_indices[ind], :, :]
-                axes[2,ind].imshow(input_slices, cmap = 'gray')
+                for ind in range(8):
+                    output_slices = output_array_max.squeeze()[slice_indices[ind], :, :]
+                    axes[0,ind].imshow(output_slices, cmap = 'coolwarm')
+                        
+                    axes[0, ind].axis('off')
                     
-                axes[2, ind].axis('off')
-               
-            plt.show()
+                    label_slices = label.squeeze()[slice_indices[ind], :,:]
+                    axes[1,ind].imshow(label_slices, cmap = 'coolwarm')
+                    axes[1, ind].axis('off')
+                    
+                    input_slices = input_image.squeeze()[slice_indices[ind], :, :]
+                    axes[2,ind].imshow(input_slices, cmap = 'gray')
+                        
+                    axes[2, ind].axis('off')
+                    
+                plt.show()
+                slice_indices = slice_indices + 1
             
             
 # =============================================================================
@@ -196,7 +201,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         
         output_image = net(input_image).view(batch_size, 2,32,32,32)
         
-        loss= criterion(output_image, label)
+        loss= module.dice_loss(output_image, label)
         valid_loss += loss.item()
    
         if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
@@ -210,25 +215,30 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             output_array_max =  torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
             #print(output_array_max.shape)
 
-            
-            fig, axes = plt.subplots(nrows = 3, ncols = 8)
-            fig.set_figheight(12)
-            fig.set_figwidth(32)
-            slice_indices = range(0, 33, 4)
-            for ind in range(8):
-                output_slices = output_array_max[slice_indices[ind], :, :]
-                axes[0,ind].imshow(output_slices, cmap = 'viridis')
+            slice_indices = np.arange(0, 29, 4)
+            for i in range(4):
+                fig, axes = plt.subplots(nrows = 3, ncols = 8)
+                fig.set_figheight(12)
+                fig.set_figwidth(32)
                 
-                axes[0, ind].axis('off')
-                label_slices = label.squeeze()[slice_indices[ind], :,:]
-                axes[1,ind].imshow(label_slices, cmap = 'viridis')
-                axes[1, ind].axis('off')
-                input_slices = input_image.squeeze()[slice_indices[ind], :, :]
-                axes[2,ind].imshow(input_slices, cmap = 'gray')
-                axes[2, ind].axis('off')
-                
+           
+                for ind in range(8):
+                    output_slices = output_array_max[slice_indices[ind], :, :]
+                    axes[0,ind].imshow(output_slices, cmap = 'viridis')
+                    
+                    axes[0, ind].axis('off')
+                    label_slices = label.squeeze()[slice_indices[ind], :,:]
+                    axes[1,ind].imshow(label_slices, cmap = 'viridis')
+                    axes[1, ind].axis('off')
+                    input_slices = input_image.squeeze()[slice_indices[ind], :, :]
+                    axes[2,ind].imshow(input_slices, cmap = 'gray')
+                    axes[2, ind].axis('off')
+                    
+                plt.show()
+                slice_indices = slice_indices + 1
             
-            plt.show()
+            
+            
             
 
             if valid_loss/OUTPUT_FREQUENCY < valid_loss_min:
