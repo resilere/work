@@ -15,6 +15,7 @@ import torchvision
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
+import dice_loss_from_internet as dl
 #from torch.utils.data import ConcatDataset
 #from torch.utils.data.sampler import SubsetRandomSampler
 np.set_printoptions(threshold=sys.maxsize)
@@ -64,8 +65,8 @@ net.train()
 
 #weights = torch.FloatTensor([0.5, 5.0])
 #criterion = nn.CrossEntropyLoss(weight = weights)
-
-optimizer = optim.Adam(net.parameters(), lr=0.001)
+criterion = module.DiceLoss()
+optimizer = optim.Adam(net.parameters(), lr=0.0001)
 
 
 '''this is for tensorboard '''
@@ -100,7 +101,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         #import pdb; pdb.set_trace()
         # forward + backward + optimize. 
         # @c: split the outputchannels in image direction in x -32- and segmentation classes -4-
-        output_image = net(input_image).view(batch_size, 2,32,32,32)
+        output_image = net(input_image).view(batch_size,2, 32,32,32)
 # =============================================================================
 #         print('output and label', output_image.shape, label.shape)
 #         print('output_image', output_image[0, :, 16, 16, 16])
@@ -109,10 +110,13 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 # =============================================================================
         
         """this is to try dice loss function"""
+        n = 2
         
+        label_vector = torch.nn.functional.one_hot(label, n) # size=(4,7,n)
+        label_vector = label_vector.permute(0, 4, 2, 3, 1)
         
-        #import ipdb; ipdb.set_trace() 
-        loss= module.dice_loss(output_image, label)
+        print(label_vector.shape)
+        loss= criterion(output_image,label_vector)
         #print(loss)
         loss.backward()
         optimizer.step()
@@ -199,9 +203,14 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         label = sample2["label"].long()
 
         
-        output_image = net(input_image).view(batch_size, 2,32,32,32)
+        """this is to try dice loss function"""
+        n = 2
         
-        loss= module.dice_loss(output_image, label)
+        label_vector = torch.nn.functional.one_hot(label, n) # size=(4,7,n)
+        label_vector = label_vector.permute(0, 4, 2, 3, 1)
+        
+        
+        loss= criterion(output_image,label_vector)
         valid_loss += loss.item()
    
         if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
