@@ -8,16 +8,13 @@ import modelpy as module
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
-#from mpl_toolkits.mplot3d.axes3d import Axes3D
 import dicom_to_patches as dtp
 import torch
 import torchvision
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-import dice_loss_from_internet as dl
-#from torch.utils.data import ConcatDataset
-#from torch.utils.data.sampler import SubsetRandomSampler
+
 np.set_printoptions(threshold=sys.maxsize)
 
 N_EPOCH = 10
@@ -59,6 +56,8 @@ validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=batc
                                                )
 
 net = module.Net2_5D()
+
+"""this code is to load a trained model"""
 #net.load_state_dict(torch.load(PATH))
 
 net.train()
@@ -92,23 +91,16 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
     
     for i, sample in enumerate(train_loader, 0):
         
-        # get the inputs; data is a list of [inputs, labels]
+        """ get the inputs; data is a list of [inputs, labels] """
         input_image = sample["image"].float()
         label = sample["label"].long()
-        #print('label max:', np.max(label.numpy()))
-        # zero the parameter gradients
-        optimizer.zero_grad()
-        #import pdb; pdb.set_trace()
-        # forward + backward + optimize. 
-        # @c: split the outputchannels in image direction in x -32- and segmentation classes -4-
-        output_image = net(input_image).view(batch_size,2, 32,32,32)
-# =============================================================================
-#         print('output and label', output_image.shape, label.shape)
-#         print('output_image', output_image[0, :, 16, 16, 16])
-#         
-#         print('input image', input_image.shape)
-# =============================================================================
         
+        '''zero the parameter gradients'''
+        
+        optimizer.zero_grad()
+        ''' here the model is used and viewed as 5 dimensional tensor '''
+        output_image = net(input_image).view(batch_size, 2, 32, 32, 32)
+
         """this is to try dice loss function"""
         n = 2
         
@@ -117,14 +109,15 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         
         
         loss= criterion(output_image,label_vector)
-        #print(loss)
+        
         loss.backward()
         optimizer.step()
         
-        # print statistics
+        '''print statistics'''
         train_loss += loss.item()
    
-        if i % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
+        if i % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    
+            """# print every OUTPUT_FREQUENCY mini-batches"""
             plt.clf()
             print('[%d, %5d] train loss: %.3f' %
                   (epoch + 1, i + 1, train_loss / OUTPUT_FREQUENCY))
@@ -160,23 +153,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
                 plt.show()
                 slice_indices = slice_indices + 1
             
-            
-# =============================================================================
-#             plot_input = input_image.squeeze()[random_slice, :,:]
-#             plot_label = label.squeeze()[random_slice, :,:]
-#             plot_output = output_array_max[random_slice, :,:]
-#             #print('plot outputand label', plot_output, plot_label)
-#             #label = label.detach().numpy()[:, ::-1, :, :]
-#             #input_array = inputs.detach().numpy()[:, ::-1, :, :]
-#             f, (ax1, ax2, ax3) = plt.subplots(1,3)
-#             ax1.imshow(plot_output , cmap = 'coolwarm')
-#             ax1.set_title('slice: %d, loss : %.3f ' % (random_slice, train_loss / OUTPUT_FREQUENCY))
-#             ax2.imshow(plot_label, cmap = 'coolwarm')
-#             ax3.imshow(plot_input, cmap = 'gray')
-#             plt.tight_layout()
-#             plt.show()
-# =============================================================================
-            #plt.savefig("out/out-%05d.jpg"%(epoch))
+
 # '''this is for tensorboard, now it works ''' 
 
             #print('torch.argmax', torch.argmax(output_image[:,:,np.random.randint(32), :,:],1).unsqueeze(1).shape,label[:,np.random.randint(32), :,:].unsqueeze(1).shape,input_image[:,np.random.randint(32), :,:].unsqueeze(1).long().shape)
@@ -206,24 +183,21 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         """this is to try dice loss function"""
         n = 2
         
-        label_vector = torch.nn.functional.one_hot(label, n) # size=(4,7,n)
+        label_vector = torch.nn.functional.one_hot(label, n) 
         label_vector = label_vector.permute(0, 4, 2, 3, 1)
         
         
         loss= criterion(output_image,label_vector)
         valid_loss += loss.item()
    
-        if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    # print every OUTPUT_FREQUENCY mini-batches
+        if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    
+            """ print every OUTPUT_FREQUENCY mini-batches"""
             plt.clf()
             print('[%d, %5d] validation loss: %.3f' %
                   (epoch + 1, j + 1, valid_loss /  OUTPUT_FREQUENCY))
             
-               
-           
-            #print(output_array.shape)
             output_array_max =  torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
-            #print(output_array_max.shape)
-
+            
             slice_indices = np.arange(0, 29, 4)
             for i in range(4):
                 fig, axes = plt.subplots(nrows = 3, ncols = 8)
@@ -245,11 +219,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
                     
                 plt.show()
                 slice_indices = slice_indices + 1
-            
-            
-            
-            
-
+           
             if valid_loss/OUTPUT_FREQUENCY < valid_loss_min:
                 valid_loss_min = valid_loss/OUTPUT_FREQUENCY
                 torch.save(net.state_dict(), PATH)
@@ -265,6 +235,5 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             valid_loss = 0.0
             writer.close()
 
-          
 
 

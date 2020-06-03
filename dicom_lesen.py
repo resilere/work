@@ -14,7 +14,7 @@ from skimage.util.shape import view_as_windows
 
 
 def dicom_to_array(directory):
-    '''turns dicom directories to arrays''' 
+    '''turns image directories to arrays''' 
     
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(directory)
@@ -97,9 +97,3 @@ def patch_label_random (array_image, array_label):
     labels_patches = view_as_windows(array_label, window_shape)
     label_patch = labels_patches[x_random,y_random,z_random,0,:,:]
     return image_patch, label_patch
-
-# =============================================================================
-# #multiple_nifti_arr([r'/home/eser/Downloads/Task05_Prostate/imagesTr/prostate_00.nii.gz',
-#                     r'/home/eser/Downloads/Task05_Prostate/imagesTr/prostate_01.nii.gz'])
-# #print(list_arr)
-# =============================================================================

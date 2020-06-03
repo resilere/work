@@ -7,7 +7,7 @@ Created on Fri Feb 14 15:47:22 2020
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
+
 
 
 
@@ -40,19 +40,12 @@ class Net2(nn.Module):
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
-        #print('conv1',x.shape)
         y = x
-        #print(x.shape)
         x = F.max_pool2d(x, (2,2))
-        #print('maxpool', x.shape)
         x = F.relu(self.conv2(x))
-        #print('conv2',x.shape)
         x = F.relu(self.upconv1(x))
-        #print('upconv1',x.shape)
         x = torch.cat((x,y), 1)
-        #print('cat',x.shape)
         x = self.conv3(x)
-        #print('conv3',x.shape)
         
         return x
 class Net2_5D(nn.Module):
@@ -68,17 +61,14 @@ class Net2_5D(nn.Module):
         self.conv4 = nn.Conv2d(3*4*32, 2*32, 5, padding = 2)
 
     def forward(self, x):
-        #print('x', x.shape)
+        """Here we take the permutations of the dimensions of the input patch and pass through CNN layers"""
+        
         y = x
         z = y
+        
         x = F.relu(self.conv1(x))
-        #print('conv1',x.shape)
-        
         x = F.relu(self.conv2(x))
-        #print('conv2',x.shape)
-        
         x = self.conv3(x)
-        #print('conv3',x.shape)
         
         y = y.permute(0, 2, 3, 1)
         y = F.relu(self.conv1(y))
@@ -96,50 +86,10 @@ class Net2_5D(nn.Module):
         x = self.conv4(x)
         
         return x
-class Net_new(nn.Module):
-    """this is a new cnn to try triplanar cnn method"""
-    def __init__(self):
-        super(Net_new, self).__init__()
-        self.conv1 = nn.Conv2d(1, 8, 5, padding=2)
-        self.conv2 = nn.Conv2d(8, 16, 5, padding=2)
-        self.conv3 = nn.Conv2d(16, 4, 5, padding= 2)
-        
-    def forward(self, x):
-        x1 = x[0] #yz plane
-        x1 = F.relu(self.conv1(x1))
-        
-        x1 = F.max_pool2d(x1, (2,2))
-        
-        x1 = F.relu(self.conv2(x1))
-        
-        x1 = F.max_pool2d(x1, (2,2))
-        
-        x2 = x[1] #xz plane
-        
-        x2 = F.relu(self.conv1(x2))
-        
-        x2 = F.max_pool2d(x2, (2,2))
-        
-        x2 = F.relu(self.conv2(x2))
-        
-        x2 = F.max_pool2d(x2, (2,2))
-        
-        x3 = x[2] #xy plane
-        
-        x3 = F.relu(self.conv1(x3))
-        
-        x3 = F.max_pool2d(x3, (2,2))
-        
-        x3 = F.relu(self.conv2(x3))
-        
-        x3 = F.max_pool2d(x3, (2,2))
-        
-        merged = torch.cat([x1,x2,x3], 1)
-        
-        print('merged shape', merged.shape)
-        return merged
+
 
 class DiceLoss(nn.Module):
+    """this is the working dice loss  fuction from kaggle"""
     def __init__(self, weight=None, size_average=True):
         super(DiceLoss, self).__init__()
 

@@ -38,10 +38,11 @@ class data_patches(Dataset):
         
         image_shape = self.image.shape
         if np.max(self.label) != 0: 
+            """this condition is for the files that dont have any positive label"""
             x_label_positive =[]
             y_label_positive =[]
             z_label_positive =[]
-            print('the label has positive')
+            #print('the label has positive')
             for i in range(number_patches):
                 x_random = np.random.choice(image_shape[0]-patch_size[0]+1, 1)
                 y_random = np.random.choice(image_shape[1]-patch_size[1]+1, 1)
@@ -70,8 +71,8 @@ class data_patches(Dataset):
 
 
     def __getitem__(self, idx):
-        #print('idx', idx)
-        #print('self.index_list[0][idx]', self.index_list[0][idx])
+        """this part gets the patches according to the patch size"""
+        
         image_patch = view_as_windows(self.image,self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
         label_patch = view_as_windows(self.label, self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
         sample = {"image":image_patch, "label":label_patch.astype(np.int_)}
