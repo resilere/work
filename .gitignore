@@ -1,2 +1,9 @@
 __pycache__
 runs
+train-test-validation.py
+train_with_test.py
+validation_different_patients.py
+train.py
+min_max.py
+load.py
+gan.py
