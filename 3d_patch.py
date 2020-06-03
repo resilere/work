@@ -20,9 +20,9 @@ import dice_loss_from_internet as dl
 #from torch.utils.data.sampler import SubsetRandomSampler
 np.set_printoptions(threshold=sys.maxsize)
 
-N_EPOCH = 1
-N_PATCH = 10
-OUTPUT_FREQUENCY = 5
+N_EPOCH = 10
+N_PATCH = 100
+OUTPUT_FREQUENCY = 50
 PATCH_SIZE = [32, 32, 32]
 MIN_LOSS = 10
 batch_size = 1
@@ -95,7 +95,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         # get the inputs; data is a list of [inputs, labels]
         input_image = sample["image"].float()
         label = sample["label"].long()
-        print('label max:', np.max(label.numpy()))
+        #print('label max:', np.max(label.numpy()))
         # zero the parameter gradients
         optimizer.zero_grad()
         #import pdb; pdb.set_trace()
@@ -115,7 +115,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         label_vector = torch.nn.functional.one_hot(label, n) # size=(4,7,n)
         label_vector = label_vector.permute(0, 4, 2, 3, 1)
         
-        print(label_vector.shape)
+        
         loss= criterion(output_image,label_vector)
         #print(loss)
         loss.backward()

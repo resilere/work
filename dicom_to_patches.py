@@ -70,8 +70,8 @@ class data_patches(Dataset):
 
 
     def __getitem__(self, idx):
-        print('idx', idx)
-        print('self.index_list[0][idx]', self.index_list[0][idx])
+        #print('idx', idx)
+        #print('self.index_list[0][idx]', self.index_list[0][idx])
         image_patch = view_as_windows(self.image,self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
         label_patch = view_as_windows(self.label, self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
         sample = {"image":image_patch, "label":label_patch.astype(np.int_)}
