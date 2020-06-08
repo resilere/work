@@ -17,9 +17,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 np.set_printoptions(threshold=sys.maxsize)
 
-N_EPOCH = 10
-N_PATCH = 100
-OUTPUT_FREQUENCY = 50
+N_EPOCH = 1
+N_PATCH = 10
+OUTPUT_FREQUENCY = 5
 PATCH_SIZE = [32, 32, 32]
 MIN_LOSS = 10
 batch_size = 1
@@ -92,6 +92,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
     for i, sample in enumerate(train_loader, 0):
         
         """ get the inputs; data is a list of [inputs, labels] """
+        net.train()
         input_image = sample["image"].float()
         label = sample["label"].long()
         

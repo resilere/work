@@ -93,16 +93,18 @@ class DiceLoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
         super(DiceLoss, self).__init__()
 
-    def forward(self, inputs, targets, smooth=1):
+    def forward(self, inputs, targets, smooth= 0.000001):
         
         #comment out if your model contains a sigmoid or equivalent activation layer
-        inputs = F.sigmoid(inputs)       
+        inputs = F.softmax(inputs, dim = 1)       
+        inputs = inputs[: , 1, : , : , : ]
+        targets = targets[: , 1, : , : , : ]
         #import pdb;pdb.set_trace()
         #flatten label and prediction tensors
         inputs = inputs.view(-1)
         targets = targets.reshape(-1) #Ich habe hier von view geandert weil es ein error gibt
         
         intersection = (inputs * targets).sum()                            
-        dice = (2.*intersection + smooth)/(inputs.sum() + targets.sum() + smooth)  
+        dice = (2.*intersection + smooth)/((inputs**2).sum() + (targets**2).sum() + smooth)  
         
         return 1 - dice
