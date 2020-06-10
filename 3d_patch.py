@@ -95,7 +95,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         net.train()
         input_image = sample["image"].float()
         label = sample["label"].long()
-        
+        patch_index = sample["patch_index"]
         '''zero the parameter gradients'''
         
         optimizer.zero_grad()
@@ -110,9 +110,9 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         
         
         loss= criterion(output_image,label_vector)
-        print('conv1', net.conv1.weight.grad)
+        #print('conv1', net.conv1.weight.grad)
         loss.backward()
-        print('conv1,after backward', net.conv1.weight.grad)
+        #print('conv1,after backward', net.conv1.weight.grad)
         optimizer.step()
         
         '''print statistics'''
@@ -131,14 +131,14 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             
             
             """here is temporary code to show inout and output image patches"""
-            slice_indices = np.arange(0, 29, 4)
+            slice_indices = np.arange(0, 9)
             for i in range(4):
                 fig, axes = plt.subplots(nrows = 3, ncols = 8)
                 fig.set_figheight(12)
                 fig.set_figwidth(32)
                 
                 for ind in range(8):
-                    output_slices = output_array_max.squeeze()[slice_indices[ind], :, :]
+                    output_slices = output_array_max[slice_indices[ind], :, :]
                     axes[0,ind].imshow(output_slices, cmap = 'coolwarm')
                         
                     axes[0, ind].axis('off')
@@ -150,10 +150,10 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
                     input_slices = input_image.squeeze()[slice_indices[ind], :, :]
                     axes[2,ind].imshow(input_slices, cmap = 'gray')
                         
-                    axes[2, ind].axis('off')
-                    
+                    #axes[2, ind].axis('off')
+                    axes[2, ind].set_xlabel('%s' % patch_index)
                 plt.show()
-                slice_indices = slice_indices + 1
+                slice_indices = slice_indices + 8
             
 
 # '''this is for tensorboard, now it works ''' 

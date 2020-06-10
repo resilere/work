@@ -75,7 +75,8 @@ class data_patches(Dataset):
         
         image_patch = view_as_windows(self.image,self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
         label_patch = view_as_windows(self.label, self.patch_size)[self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx],:,:,:]
-        sample = {"image":image_patch, "label":label_patch.astype(np.int_)}
+        patch_index = [self.index_list[0][idx],self.index_list[1][idx],self.index_list[2][idx]]
+        sample = {"image":image_patch, "label":label_patch.astype(np.int_), "patch_index" : patch_index}
         
         return sample
     def crop_image_only_outside(self, tol=0):
