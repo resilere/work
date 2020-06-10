@@ -17,9 +17,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 np.set_printoptions(threshold=sys.maxsize)
 
-N_EPOCH = 1
-N_PATCH = 10
-OUTPUT_FREQUENCY = 5
+N_EPOCH = 10
+N_PATCH = 100
+OUTPUT_FREQUENCY = 50
 PATCH_SIZE = [32, 32, 32]
 MIN_LOSS = 10
 batch_size = 1
@@ -180,7 +180,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         
         input_image = sample2["image"].float()
         label = sample2["label"].long()
-
+        patch_index = sample["patch_index"]
         
         """this is to try dice loss function"""
         n = 2
@@ -200,7 +200,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             
             output_array_max =  torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
             
-            slice_indices = np.arange(0, 29, 4)
+            slice_indices = np.arange(0, 9)
             for i in range(4):
                 fig, axes = plt.subplots(nrows = 3, ncols = 8)
                 fig.set_figheight(12)
@@ -217,10 +217,11 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
                     axes[1, ind].axis('off')
                     input_slices = input_image.squeeze()[slice_indices[ind], :, :]
                     axes[2,ind].imshow(input_slices, cmap = 'gray')
-                    axes[2, ind].axis('off')
+                    #axes[2, ind].axis('off')
+                    axes[2, ind].set_xlabel('%s' % patch_index)
                     
                 plt.show()
-                slice_indices = slice_indices + 1
+                slice_indices = slice_indices + 8
            
             if valid_loss/OUTPUT_FREQUENCY < valid_loss_min:
                 valid_loss_min = valid_loss/OUTPUT_FREQUENCY

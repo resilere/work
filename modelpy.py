@@ -64,7 +64,7 @@ class Net2_5D(nn.Module):
         convolutional layers but before Relu, except the last layer"""
         self.m64 = nn.BatchNorm2d(64)
         self.m80 = nn.BatchNorm2d(80)
-        self.m128 = nn.BatchNorm2d(128)
+        #self.m128 = nn.BatchNorm2d(128)
         #self.m32 = nn.BatchNorm2d(32)
     def forward(self, x):
         """Here we take the permutations of the dimensions of the input patch and pass through CNN layers"""
