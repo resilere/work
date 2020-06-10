@@ -58,35 +58,42 @@ class Net2_5D(nn.Module):
         self.conv2 = nn.Conv2d(64, 80, 5, padding=2)
         
         self.conv3 = nn.Conv2d(80, 32*4, 5, padding=2)
-        self.conv4 = nn.Conv2d(3*4*32, 2*32, 5, padding = 2)
-
+        self.conv4 = nn.Conv2d(32*4, 32, 5, padding=2)
+        self.conv5 = nn.Conv2d(3*32, 2*32, 5, padding = 2)
+        """this is batch normalization, for 32 channels, implemented after 
+        convolutional layers but before Relu, except the last layer"""
+        self.m64 = nn.BatchNorm2d(64)
+        self.m80 = nn.BatchNorm2d(80)
+        self.m128 = nn.BatchNorm2d(128)
+        self.m32 = nn.BatchNorm2d(32)
     def forward(self, x):
         """Here we take the permutations of the dimensions of the input patch and pass through CNN layers"""
         
         y = x
         z = y
-        """this is batch normalization, for 32 channels, implemented after 
-        convolutional layers but before Relu, except the last layer"""
-        m64 = nn.BatchNorm2d(64)
-        m80 = nn.BatchNorm2d(80)
-        x = F.relu(m64(self.conv1(x)))
-        x = F.relu(m80(self.conv2(x)))
-        x = self.conv3(x)
         
+        
+        x = F.relu(self.m64(self.conv1(x)))
+        x = F.relu(self.m80(self.conv2(x)))
+        x = F.relu(self.m128(self.conv3(x)))
+        x = self.m32(self.conv4(x))
+        print('x', x.shape)
         y = y.permute(0, 2, 3, 1)
-        y = F.relu(m64(self.conv1(y)))
-        y = F.relu(m80(self.conv2(y)))
-        y = self.conv3(y)
-        y = y.permute(0,1,2,3)
-        
+        y = F.relu(self.m64(self.conv1(y)))
+        y = F.relu(self.m80(self.conv2(y)))
+        y = F.relu(self.m128(self.conv3(y)))
+        y = self.m32(self.conv4(y))
+        y = y.permute(0,3,1,2)
+        print('y', y.shape)
         z = z.permute(0, 3, 1, 2)
-        z = F.relu(m64(self.conv1(z)))
-        z = F.relu(m80(self.conv2(z)))
-        z = self.conv3(z)
-        z = z.permute(0,1,2,3)
-        
+        z = F.relu(self.m64(self.conv1(z)))
+        z = F.relu(self.m80(self.conv2(z)))
+        z = F.relu(self.m128(self.conv3(z)))
+        z = self.m32(self.conv4(z))
+        z = z.permute(0,2,3,1)
+        print('z', z.shape)
         x = torch.cat([x,y,z], 1)
-        x = self.conv4(x)
+        x = self.conv5(x)
         
         return x
 

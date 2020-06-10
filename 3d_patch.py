@@ -65,7 +65,7 @@ net.train()
 #weights = torch.FloatTensor([0.5, 5.0])
 #criterion = nn.CrossEntropyLoss(weight = weights)
 criterion = module.DiceLoss()
-optimizer = optim.Adam(net.parameters(), lr=0.0001)
+optimizer = optim.Adam(net.parameters(), lr=0.01)
 
 
 '''this is for tensorboard '''
@@ -112,6 +112,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         loss= criterion(output_image,label_vector)
         print('conv1', net.conv1.weight.grad)
         loss.backward()
+        print('conv1,after backward', net.conv1.weight.grad)
         optimizer.step()
         
         '''print statistics'''
