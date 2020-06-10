@@ -110,7 +110,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         
         
         loss= criterion(output_image,label_vector)
-        
+        print('conv1', net.conv1.weight.grad)
         loss.backward()
         optimizer.step()
         

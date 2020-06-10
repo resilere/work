@@ -65,20 +65,23 @@ class Net2_5D(nn.Module):
         
         y = x
         z = y
-        
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
+        """this is batch normalization, for 32 channels, implemented after 
+        convolutional layers but before Relu, except the last layer"""
+        m64 = nn.BatchNorm2d(64)
+        m80 = nn.BatchNorm2d(80)
+        x = F.relu(m64(self.conv1(x)))
+        x = F.relu(m80(self.conv2(x)))
         x = self.conv3(x)
         
         y = y.permute(0, 2, 3, 1)
-        y = F.relu(self.conv1(y))
-        y = F.relu(self.conv2(y))
+        y = F.relu(m64(self.conv1(y)))
+        y = F.relu(m80(self.conv2(y)))
         y = self.conv3(y)
         y = y.permute(0,1,2,3)
         
         z = z.permute(0, 3, 1, 2)
-        z = F.relu(self.conv1(z))
-        z = F.relu(self.conv2(z))
+        z = F.relu(m64(self.conv1(z)))
+        z = F.relu(m80(self.conv2(z)))
         z = self.conv3(z)
         z = z.permute(0,1,2,3)
         
