@@ -23,19 +23,23 @@ OUTPUT_FREQUENCY = 5
 PATCH_SIZE = [32, 32, 32]
 MIN_LOSS = 10
 batch_size = 1
+
 dir_charite = r"C:\Users\islere\Downloads\dicom_data\path_files_for_code\3d_model_orca.pth"
 dir_home = "/home/eser/path_files_for_code/3d_model_orca.pth"
-PATH = dir_charite
+PATH = dir_home
+
 charite_dir = r"C:\Users\islere\Downloads\dicom_data\Training Set"
 home_dir = r'/home/eser/Downloads/charite/orCaScore/Training Set'
+change_directory = home_dir
+
 INPUT_FILES_TRAIN = (
     (
-     '%s\Images\TRV1P3CTI.mhd' % charite_dir,
-     '%s\Reference standard\TRV1P3R.mhd' % charite_dir
+     '%s\Images\TRV1P3CTI.mhd' % change_directory,
+     '%s\Reference standard\TRV1P3R.mhd' % change_directory
      ),
     (
-     '%s\Images\TRV1P4CTI.mhd' % charite_dir,
-     '%s\Reference standard\TRV1P4R.mhd' % charite_dir
+     '%s\Images\TRV1P4CTI.mhd' % change_directory,
+     '%s\Reference standard\TRV1P4R.mhd' % change_directory
      )
     
    
@@ -43,8 +47,8 @@ INPUT_FILES_TRAIN = (
 
 INPUT_FILES_VALIDATION = (
    (
-     '%s\Images\TRV1P5CTI.mhd' % charite_dir,
-     '%s\Reference standard\TRV1P5R.mhd' % charite_dir
+     '%s\Images\TRV1P5CTI.mhd' % change_directory,
+     '%s\Reference standard\TRV1P5R.mhd' % change_directory
      ), 
     
 )
