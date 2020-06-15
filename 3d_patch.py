@@ -17,22 +17,25 @@ from torch.utils.tensorboard import SummaryWriter
 
 np.set_printoptions(threshold=sys.maxsize)
 
-N_EPOCH = 10
-N_PATCH = 100
-OUTPUT_FREQUENCY = 50
+N_EPOCH = 1
+N_PATCH = 10
+OUTPUT_FREQUENCY = 5
 PATCH_SIZE = [32, 32, 32]
 MIN_LOSS = 10
 batch_size = 1
-PATH = "/home/eser/path_files_for_code/3d_model_orca.pth"
-
+dir_charite = r"C:\Users\islere\Downloads\dicom_data\path_files_for_code\3d_model_orca.pth"
+dir_home = "/home/eser/path_files_for_code/3d_model_orca.pth"
+PATH = dir_charite
+charite_dir = r"C:\Users\islere\Downloads\dicom_data\Training Set"
+home_dir = r'/home/eser/Downloads/charite/orCaScore/Training Set'
 INPUT_FILES_TRAIN = (
     (
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P3CTI.mhd',
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P3R.mhd'
+     '%s\Images\TRV1P3CTI.mhd' % charite_dir,
+     '%s\Reference standard\TRV1P3R.mhd' % charite_dir
      ),
     (
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P4CTI.mhd',
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P4R.mhd'
+     '%s\Images\TRV1P4CTI.mhd' % charite_dir,
+     '%s\Reference standard\TRV1P4R.mhd' % charite_dir
      )
     
    
@@ -40,8 +43,8 @@ INPUT_FILES_TRAIN = (
 
 INPUT_FILES_VALIDATION = (
    (
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Images/TRV1P5CTI.mhd',
-     r'/home/eser/Downloads/charite/orCaScore/Training Set/Reference standard/TRV1P5R.mhd'
+     '%s\Images\TRV1P5CTI.mhd' % charite_dir,
+     '%s\Reference standard\TRV1P5R.mhd' % charite_dir
      ), 
     
 )
