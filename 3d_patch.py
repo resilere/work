@@ -10,10 +10,11 @@ import sys
 import matplotlib.pyplot as plt
 import dicom_to_patches as dtp
 import torch
-import torchvision
-import torch.nn as nn
+# import torchvision
+# import torch.nn as nn
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
+
+from pathlib import Path
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -21,7 +22,7 @@ N_EPOCH = 1
 N_PATCH = 10
 OUTPUT_FREQUENCY = 5
 PATCH_SIZE = [32, 32, 32]
-MIN_LOSS = 10
+MIN_LOSS = 0.5
 batch_size = 1
 
 
@@ -29,18 +30,19 @@ dir_charite = r"C:\Users\islere\Downloads\dicom_data\path_files_for_code\3d_mode
 dir_home = "/home/eser/path_files_for_code/3d_model_orca.pth"
 PATH = dir_home
 
-charite_dir = r"C:\Users\islere\Downloads\dicom_data\Training Set"
-home_dir = r'/home/eser/Downloads/charite/orCaScore/Training Set'
-change_directory = home_dir
+charite_dir = Path(r"C:/Users/islere/Downloads/dicom_data/Training Set/")
+home_dir = Path(r"/home/eser/Downloads/charite/orCaScore/Training Set/")
+
+data_folder = home_dir
 
 INPUT_FILES_TRAIN = (
     (
-     '%s\Images\TRV1P3CTI.mhd' % change_directory,
-     '%s\Reference standard\TRV1P3R.mhd' % change_directory
+     str(data_folder / 'Images/TRV1P3CTI.mhd' ),
+     str(data_folder / 'Reference standard/TRV1P3R.mhd')
      ),
     (
-     '%s\Images\TRV1P4CTI.mhd' % change_directory,
-     '%s\Reference standard\TRV1P4R.mhd' % change_directory
+     str(data_folder / 'Images/TRV1P4CTI.mhd'),
+     str( data_folder / 'Reference standard/TRV1P4R.mhd')
 
      )
     
@@ -50,8 +52,8 @@ INPUT_FILES_TRAIN = (
 INPUT_FILES_VALIDATION = (
    (
 
-     '%s\Images\TRV1P5CTI.mhd' % change_directory,
-     '%s\Reference standard\TRV1P5R.mhd' % change_directory
+     str(data_folder / 'Images/TRV1P5CTI.mhd' ),
+     str(data_folder / 'Reference standard/TRV1P5R.mhd' )
 
      ), 
     
@@ -78,18 +80,6 @@ net.train()
 criterion = module.DiceLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.01)
 
-
-'''this is for tensorboard '''
-writer = SummaryWriter('runs/brain_images')
-
-def plot_classes_preds(net, images, labels):
-    fig = plt.figure(figsize=(12, 48))
-    for idx in np.arange(4):
-        
-        plt.imshow(images[0][idx].detach().numpy())
-        
-    return fig
-    
 
 '''this is where the training begins''' 
 valid_loss_min = MIN_LOSS  
@@ -135,55 +125,14 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             print('[%d, %5d] train loss: %.3f' %
                   (epoch + 1, i + 1, train_loss / OUTPUT_FREQUENCY))
             
-            random_slice = np.random.randint(32)
-            
             
             output_array_max = torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
             
-            
-            """here is temporary code to show inout and output image patches"""
-            slice_indices = np.arange(0, 9)
-            for i in range(4):
-                fig, axes = plt.subplots(nrows = 3, ncols = 8)
-                fig.set_figheight(12)
-                fig.set_figwidth(32)
-                
-                for ind in range(8):
-                    output_slices = output_array_max[slice_indices[ind], :, :]
-                    axes[0,ind].imshow(output_slices, cmap = 'coolwarm')
-                        
-                    axes[0, ind].axis('off')
-                    
-                    label_slices = label.squeeze()[slice_indices[ind], :,:]
-                    axes[1,ind].imshow(label_slices, cmap = 'coolwarm')
-                    axes[1, ind].axis('off')
-                    
-                    input_slices = input_image.squeeze()[slice_indices[ind], :, :]
-                    axes[2,ind].imshow(input_slices, cmap = 'gray')
-                        
-                    #axes[2, ind].axis('off')
-                    axes[2, ind].set_xlabel('%s' % patch_index)
-                plt.show()
-                slice_indices = slice_indices + 8
-            
+            """here is the code for the patch plots"""
+            dtp.plot_patches(output_array_max,label,input_image,patch_index,"coolwarm")
 
-# '''this is for tensorboard, now it works ''' 
 
-            #print('torch.argmax', torch.argmax(output_image[:,:,np.random.randint(32), :,:],1).unsqueeze(1).shape,label[:,np.random.randint(32), :,:].unsqueeze(1).shape,input_image[:,np.random.randint(32), :,:].unsqueeze(1).long().shape)
-            images_together = torch.cat((torch.argmax(output_image[:,:,np.random.randint(32), :,:],1).unsqueeze(1), label[:,np.random.randint(32), :,:].unsqueeze(1), input_image[:,np.random.randint(32), :,:].unsqueeze(1).long()),3)
-            #print('images together', images_together.shape)
-            #img_grid = torchvision.utils.make_grid(images_together)
-            writer.add_images('training image' + str(i) + '_' + str(epoch), images_together)
-            # ...log the running loss
-            writer.add_scalar('training loss', train_loss / OUTPUT_FREQUENCY, epoch *len(train_loader) + i)
-            # ...log a Matplotlib Figure showing the model's predictions on a random mini-batch
-            #writer.add_figure('predictions vs. actuals', plot_classes_preds(net, output_image, label), global_step=epoch * len(train_loader) + i)
             train_loss = 0.0
-            #write to tensorboard
-            
-            # writer.add_figure('figures', plt.imshow(label),close = True)
-            writer.close()
-    
     print('Finished Training')
     net.eval()
     
@@ -211,43 +160,12 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             
             output_array_max =  torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
             
-            slice_indices = np.arange(0, 9)
-            for i in range(4):
-                fig, axes = plt.subplots(nrows = 3, ncols = 8)
-                fig.set_figheight(12)
-                fig.set_figwidth(32)
-                
-           
-                for ind in range(8):
-                    output_slices = output_array_max[slice_indices[ind], :, :]
-                    axes[0,ind].imshow(output_slices, cmap = 'viridis')
-                    
-                    axes[0, ind].axis('off')
-                    label_slices = label.squeeze()[slice_indices[ind], :,:]
-                    axes[1,ind].imshow(label_slices, cmap = 'viridis')
-                    axes[1, ind].axis('off')
-                    input_slices = input_image.squeeze()[slice_indices[ind], :, :]
-                    axes[2,ind].imshow(input_slices, cmap = 'gray')
-                    #axes[2, ind].axis('off')
-                    axes[2, ind].set_xlabel('%s' % patch_index)
-                    
-                plt.show()
-                slice_indices = slice_indices + 8
+            """here is the code for the patch plots"""
+            dtp.plot_patches(output_array_max,label,input_image,patch_index,"viridis")
            
             if valid_loss/OUTPUT_FREQUENCY < valid_loss_min:
                 valid_loss_min = valid_loss/OUTPUT_FREQUENCY
                 torch.save(net.state_dict(), PATH)
-            
-            images_together2 = torch.cat((torch.argmax(output_image[:,:,np.random.randint(32), :,:],1).unsqueeze(1), label[:,np.random.randint(32), :,:].unsqueeze(1), input_image[:,np.random.randint(32), :,:].unsqueeze(1).long()),3)
-            
-            #img_grid2 = torchvision.utils.make_grid(images_together2.squeeze(1))
-            
-            writer.add_images('validation image' + str(i) + '_' + str(epoch),images_together2)
-            
-            writer.add_scalar('validation loss', valid_loss /  OUTPUT_FREQUENCY, epoch * len(validation_loader) + j)
-            
             valid_loss = 0.0
-            writer.close()
-
 
 

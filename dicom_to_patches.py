@@ -10,6 +10,7 @@ from torch.utils.data import Dataset
 import dicom_lesen as dcr
 from skimage.util.shape import view_as_windows
 from torch.utils.data import ConcatDataset
+import matplotlib.pyplot as plt 
 
 class data_patches(Dataset):
     
@@ -117,4 +118,30 @@ def concat_datasets(input_files_list, N_PATCH, PATCH_SIZE ):
         datasets.append(data)
     
     return ConcatDataset(datasets)
-
+"""this function is for plotting the patches"""
+def plot_patches (output_array_max, label, input_image, patch_index, colour):
+    """here is a code to show inout and output image patches"""
+    slice_indices = np.arange(0, 9)
+    for i in range(4):
+        fig, axes = plt.subplots(nrows = 3, ncols = 8)
+        fig.set_figheight(12)
+        fig.set_figwidth(32)
+                
+        for ind in range(8):
+            output_slices = output_array_max[slice_indices[ind], :, :]
+            axes[0,ind].imshow(output_slices, cmap = colour)
+            
+            axes[0, ind].axis('off')
+            
+            label_slices = label.squeeze()[slice_indices[ind], :,:]
+            axes[1,ind].imshow(label_slices, cmap = colour)
+            axes[1, ind].axis('off')
+            
+            input_slices = input_image.squeeze()[slice_indices[ind], :, :]
+            axes[2,ind].imshow(input_slices, cmap = 'gray')
+            
+            #axes[2, ind].axis('off')
+            axes[2, ind].set_xlabel('%s' % patch_index)
+        plt.show()
+        slice_indices = slice_indices + 8
+            
