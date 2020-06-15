@@ -55,44 +55,71 @@ class Net2_5D(nn.Module):
     def __init__(self):
         super(Net2_5D, self).__init__()
         self.conv1 = nn.Conv2d(32, 64, 5, padding=2)
-        self.conv2 = nn.Conv2d(64, 80, 5, padding=2)
         
-        self.conv3 = nn.Conv2d(80, 32*2, 5, padding=2)
-        #self.conv4 = nn.Conv2d(32*2, 32, 5, padding=2)
-        self.conv5 = nn.Conv2d(3*2*32, 2*32, 5, padding = 2)
+        self.conv2 = nn.Conv2d(64, 32*4, 5, padding=2)
+        
+        self.conv3 = nn.Conv2d(32*4, 32*8, 5, padding=2)
+        
+        self.upconv1 = nn.ConvTranspose2d(32*8, 32*8 , 5 , stride = 2, padding = 2, output_padding=1)
+        
+        self.conv4 = nn.Conv2d(32*8 + 32*4, 32*4, 5, padding =2 )
+        
+        self.upconv2 = nn.ConvTranspose2d(32*4, 32*4 , 5 , stride = 2, padding = 2, output_padding=1)
+        
+        self.conv5 = nn.Conv2d(32*2 + 32*4, 32*2, 5, padding =2 )
+        
+        self.conv6 = nn.Conv2d(3*2*32, 2*32, 5, padding = 2)
+        
         """this is batch normalization, for 32 channels, implemented after 
         convolutional layers but before Relu, except the last layer"""
         self.m64 = nn.BatchNorm2d(64)
-        self.m80 = nn.BatchNorm2d(80)
-        #self.m128 = nn.BatchNorm2d(128)
+        self.m128 = nn.BatchNorm2d(128)
+        self.m256 = nn.BatchNorm2d(256)
         #self.m32 = nn.BatchNorm2d(32)
     def forward(self, x):
         """Here we take the permutations of the dimensions of the input patch and pass through CNN layers"""
+        planes = []
+        y = z = x
         
-        y = x
-        z = y
-        
-        x = F.relu(self.m64(self.conv1(x)))
-        x = F.relu(self.m80(self.conv2(x)))
-        x = self.m64(self.conv3(x))
-        #x = self.m32(self.conv4(x))
-        print('x', x.shape)
         y = y.permute(0, 2, 3, 1)
-        y = F.relu(self.m64(self.conv1(y)))
-        y = F.relu(self.m80(self.conv2(y)))
-        y = self.m64(self.conv3(y))
-        #y = self.m32(self.conv4(y))
-        #y = y.permute(0,3,1,2)
-        print('y', y.shape)
         z = z.permute(0, 3, 1, 2)
-        z = F.relu(self.m64(self.conv1(z)))
-        z = F.relu(self.m80(self.conv2(z)))
-        z = self.m64(self.conv3(z))
-        #z = self.m32(self.conv4(z))
-        #z = z.permute(0,2,3,1)
-        print('z', z.shape)
-        x = torch.cat([x,y,z], 1)
-        x = self.conv5(x)
+        planes.append(x)
+        planes.append(y)
+        planes.append(z)
+        
+        
+        concat = []
+        '''this is a loop to implement the same cnn layers for the different planes of the 3d patch'''
+        for x in planes:
+            
+            x = F.relu(self.m64(self.conv1(x)))
+            x1 = x
+            
+            x = F.max_pool2d(x, (2,2))
+            
+            x = F.relu(self.m128(self.conv2(x)))
+            x2 = x
+            
+            x = F.max_pool2d(x, (2,2))
+            
+            x = F.relu(self.m256(self.conv3(x)))
+            
+            x = F.relu(self.upconv1(x))
+            #import pdb; pdb.set_trace()
+            x = torch.cat((x, x2), 1)
+            
+            x = F.relu(self.m128(self.conv4(x)))
+            
+            x = F.relu(self.upconv2(x))
+            
+            x = torch.cat((x, x1), 1)
+            
+            x = F.relu(self.m64(self.conv5(x)))
+            
+            concat.append(x)
+
+        x = torch.cat(concat, 1)
+        x = self.conv6(x)
         
         return x
 
