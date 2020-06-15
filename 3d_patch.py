@@ -24,6 +24,7 @@ PATCH_SIZE = [32, 32, 32]
 MIN_LOSS = 10
 batch_size = 1
 
+
 dir_charite = r"C:\Users\islere\Downloads\dicom_data\path_files_for_code\3d_model_orca.pth"
 dir_home = "/home/eser/path_files_for_code/3d_model_orca.pth"
 PATH = dir_home
@@ -40,6 +41,7 @@ INPUT_FILES_TRAIN = (
     (
      '%s\Images\TRV1P4CTI.mhd' % change_directory,
      '%s\Reference standard\TRV1P4R.mhd' % change_directory
+
      )
     
    
@@ -47,8 +49,10 @@ INPUT_FILES_TRAIN = (
 
 INPUT_FILES_VALIDATION = (
    (
+
      '%s\Images\TRV1P5CTI.mhd' % change_directory,
      '%s\Reference standard\TRV1P5R.mhd' % change_directory
+
      ), 
     
 )
