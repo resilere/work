@@ -7,7 +7,7 @@ Created on Fri Feb 14 15:47:22 2020
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
+
 
 
 
@@ -40,19 +40,12 @@ class Net2(nn.Module):
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
-        #print('conv1',x.shape)
         y = x
-        #print(x.shape)
         x = F.max_pool2d(x, (2,2))
-        #print('maxpool', x.shape)
         x = F.relu(self.conv2(x))
-        #print('conv2',x.shape)
         x = F.relu(self.upconv1(x))
-        #print('upconv1',x.shape)
         x = torch.cat((x,y), 1)
-        #print('cat',x.shape)
         x = self.conv3(x)
-        #print('conv3',x.shape)
         
         return x
 class Net2_5D(nn.Module):
@@ -61,98 +54,102 @@ class Net2_5D(nn.Module):
     
     def __init__(self):
         super(Net2_5D, self).__init__()
+        self.conv0 = nn.Conv2d(16, 32, 5, padding = 2 )
         self.conv1 = nn.Conv2d(32, 64, 5, padding=2)
-        self.conv2 = nn.Conv2d(64, 80, 5, padding=2)
         
-        self.conv3 = nn.Conv2d(80, 32*4, 5, padding=2)
-        self.conv4 = nn.Conv2d(3*4*32, 2*32, 5, padding = 2)
+        self.conv2 = nn.Conv2d(64, 32*4, 5, padding=2)
+        
+        self.conv3 = nn.Conv2d(32*4, 32*8, 5, padding=2)
+        
+        self.upconv1 = nn.ConvTranspose2d(32*8, 32*8 , 5 , stride = 2, padding = 2, output_padding=1)
+        
+        self.conv4 = nn.Conv2d(32*8 + 32*4, 32*4, 5, padding =2 )
+        
+        self.upconv2 = nn.ConvTranspose2d(32*4, 32*4 , 5 , stride = 2, padding = 2, output_padding=1)
+        
+        self.conv5 = nn.Conv2d(32*2 + 32*4, 32*2, 5, padding =2 )
+        
+        self.conv6 = nn.Conv2d(3*2*32, 2*32, 5, padding = 2)
+        
+        self.conv7 = nn.Conv2d(2*32, 32, 5, padding = 2)
+        """this is batch normalization, for 32 channels, implemented after 
+        convolutional layers but before Relu, except the last layer"""
+        self.m32 = nn.BatchNorm2d(32)
+        self.m64 = nn.BatchNorm2d(64)
+        self.m128 = nn.BatchNorm2d(128)
+        self.m256 = nn.BatchNorm2d(256)
+        #self.m32 = nn.BatchNorm2d(32)
+    def forward(self, x):
+        """Here we take the permutations of the dimensions of the input patch and pass through CNN layers"""
+        planes = []
+        
+# =============================================================================
+#         y = z = x
+#         
+#         y = y.permute(0, 2, 3, 1)
+#         z = z.permute(0, 3, 1, 2)
+#         planes.append(y)
+#         planes.append(z)
+#         
+# =============================================================================
+        planes.append(x)
+        
+        
+        concat = []
+        '''this is a loop to implement the same cnn layers for the different planes of the 3d patch'''
+        for x in planes:
+            x = F.relu(self.m32(self.conv0(x)))
+            x = F.relu(self.m64(self.conv1(x)))
+            x1 = x
+            
+            x = F.max_pool2d(x, (2,2))
+            
+            x = F.relu(self.m128(self.conv2(x)))
+            x2 = x
+            
+            x = F.max_pool2d(x, (2,2))
+            
+            x = F.relu(self.m256(self.conv3(x)))
+            
+            x = F.relu(self.upconv1(x))
+            #import pdb; pdb.set_trace()
+            x = torch.cat((x, x2), 1)
+            
+            x = F.relu(self.m128(self.conv4(x)))
+            
+            x = F.relu(self.upconv2(x))
+            
+            x = torch.cat((x, x1), 1)
+            
+            x = F.relu(self.m64(self.conv5(x)))
+            x = self.conv7(x)
+            #concat.append(x)
 
-    def forward(self, x):
-        #print('x', x.shape)
-        y = x
-        z = y
-        x = F.relu(self.conv1(x))
-        #print('conv1',x.shape)
-        
-        x = F.relu(self.conv2(x))
-        #print('conv2',x.shape)
-        
-        x = self.conv3(x)
-        #print('conv3',x.shape)
-        
-        y = y.permute(0, 2, 3, 1)
-        y = F.relu(self.conv1(y))
-        y = F.relu(self.conv2(y))
-        y = self.conv3(y)
-        y = y.permute(0,1,2,3)
-        
-        z = z.permute(0, 3, 1, 2)
-        z = F.relu(self.conv1(z))
-        z = F.relu(self.conv2(z))
-        z = self.conv3(z)
-        z = z.permute(0,1,2,3)
-        
-        x = torch.cat([x,y,z], 1)
-        x = self.conv4(x)
-        
+# =============================================================================
+#         x = torch.cat(concat, 1)
+#         x = self.conv6(x)
+#         
+# =============================================================================
         return x
-class Net_new(nn.Module):
-    """this is a new cnn to try triplanar cnn method"""
-    def __init__(self):
-        super(Net_new, self).__init__()
-        self.conv1 = nn.Conv2d(1, 8, 5, padding=2)
-        self.conv2 = nn.Conv2d(8, 16, 5, padding=2)
-        self.conv3 = nn.Conv2d(16, 4, 5, padding= 2)
-        
-    def forward(self, x):
-        x1 = x[0] #yz plane
-        x1 = F.relu(self.conv1(x1))
-        
-        x1 = F.max_pool2d(x1, (2,2))
-        
-        x1 = F.relu(self.conv2(x1))
-        
-        x1 = F.max_pool2d(x1, (2,2))
-        
-        x2 = x[1] #xz plane
-        
-        x2 = F.relu(self.conv1(x2))
-        
-        x2 = F.max_pool2d(x2, (2,2))
-        
-        x2 = F.relu(self.conv2(x2))
-        
-        x2 = F.max_pool2d(x2, (2,2))
-        
-        x3 = x[2] #xy plane
-        
-        x3 = F.relu(self.conv1(x3))
-        
-        x3 = F.max_pool2d(x3, (2,2))
-        
-        x3 = F.relu(self.conv2(x3))
-        
-        x3 = F.max_pool2d(x3, (2,2))
-        
-        merged = torch.cat([x1,x2,x3], 1)
-        
-        print('merged shape', merged.shape)
-        return merged
+
 
 class DiceLoss(nn.Module):
+    """this is the working dice loss  fuction from kaggle"""
     def __init__(self, weight=None, size_average=True):
         super(DiceLoss, self).__init__()
 
-    def forward(self, inputs, targets, smooth=1):
+    def forward(self, inputs, targets, smooth= 0.000001):
         
         #comment out if your model contains a sigmoid or equivalent activation layer
-        inputs = F.sigmoid(inputs)       
+        inputs = F.softmax(inputs, dim = 1)       
+        inputs = inputs[: , 1, : , : , : ]
+        #targets = targets[: , 1, : , : , : ]
         #import pdb;pdb.set_trace()
         #flatten label and prediction tensors
         inputs = inputs.view(-1)
         targets = targets.reshape(-1) #Ich habe hier von view geandert weil es ein error gibt
         
         intersection = (inputs * targets).sum()                            
-        dice = (2.*intersection + smooth)/(inputs.sum() + targets.sum() + smooth)  
+        dice = (2.*intersection + smooth)/((inputs**2).sum() + (targets**2).sum() + smooth)  
         
         return 1 - dice
