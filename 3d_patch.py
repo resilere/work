@@ -21,7 +21,7 @@ np.set_printoptions(threshold=sys.maxsize)
 N_EPOCH = 1
 N_PATCH = 10
 OUTPUT_FREQUENCY = 5
-PATCH_SIZE = [32, 32, 32]
+PATCH_SIZE = [16, 16, 16]
 MIN_LOSS = 0.5
 batch_size = 1
 
@@ -101,19 +101,26 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         
         optimizer.zero_grad()
         ''' here the model is used and viewed as 5 dimensional tensor '''
-        output_image = net(input_image).view(batch_size, 2, 32, 32, 32)
+        output_image = net(input_image).view(batch_size, 2, PATCH_SIZE[0], PATCH_SIZE[1], PATCH_SIZE[2])
 
         """this is to try dice loss function"""
-        n = 2
+# =============================================================================
+#         n = 2
+#         
+#         label_vector = torch.nn.functional.one_hot(label, n) # size=(4,7,n)
+#         label_vector = label_vector.permute(0, 4, 1, 2, 3)
+#         
+# =============================================================================
         
-        label_vector = torch.nn.functional.one_hot(label, n) # size=(4,7,n)
-        label_vector = label_vector.permute(0, 4, 2, 3, 1)
-        
-        
-        loss= criterion(output_image,label_vector)
+        loss= criterion(output_image,label)
         
         loss.backward()
-        #print('conv1,after backward', net.conv1.weight.grad)
+        print('max grad conv1,', torch.max(net.conv1.weight.grad))
+        print('min grad conv1,', torch.min(net.conv1.weight.grad))
+# =============================================================================
+#         for name, param in net.named_parameters():
+#             print("name parameter", name)
+# =============================================================================
         optimizer.step()
         
         '''print statistics'''
@@ -129,7 +136,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             output_array_max = torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
             
             """here is the code for the patch plots"""
-            dtp.plot_patches(output_array_max,label,input_image,patch_index,"coolwarm")
+            dtp.plot_patches(output_array_max,label,input_image,patch_index,"coolwarm", PATCH_SIZE[0])
 
 
             train_loss = 0.0
@@ -140,16 +147,18 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         
         input_image = sample2["image"].float()
         label = sample2["label"].long()
-        patch_index = sample["patch_index"]
-        
+        patch_index = sample2["patch_index"]
+        output_image = net(input_image).view(batch_size, 2, PATCH_SIZE[0], PATCH_SIZE[1], PATCH_SIZE[2])
         """this is to try dice loss function"""
-        n = 2
+# =============================================================================
+#         n = 2
+#         
+#         label_vector = torch.nn.functional.one_hot(label, n) 
+#         label_vector = label_vector.permute(0, 4, 2, 3, 1)
+#         
+# =============================================================================
         
-        label_vector = torch.nn.functional.one_hot(label, n) 
-        label_vector = label_vector.permute(0, 4, 2, 3, 1)
-        
-        
-        loss= criterion(output_image,label_vector)
+        loss= criterion(output_image,label)
         valid_loss += loss.item()
    
         if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    
@@ -161,7 +170,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             output_array_max =  torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
             
             """here is the code for the patch plots"""
-            dtp.plot_patches(output_array_max,label,input_image,patch_index,"viridis")
+            dtp.plot_patches(output_array_max,label,input_image,patch_index,"viridis", PATCH_SIZE[0])
            
             if valid_loss/OUTPUT_FREQUENCY < valid_loss_min:
                 valid_loss_min = valid_loss/OUTPUT_FREQUENCY

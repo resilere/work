@@ -119,10 +119,10 @@ def concat_datasets(input_files_list, N_PATCH, PATCH_SIZE ):
     
     return ConcatDataset(datasets)
 """this function is for plotting the patches"""
-def plot_patches (output_array_max, label, input_image, patch_index, colour):
+def plot_patches (output_array_max, label, input_image, patch_index, colour, PATCH_SIZE):
     """here is a code to show inout and output image patches"""
     slice_indices = np.arange(0, 9)
-    for i in range(4):
+    for i in range(int(PATCH_SIZE/8)):
         fig, axes = plt.subplots(nrows = 3, ncols = 8)
         fig.set_figheight(12)
         fig.set_figwidth(32)
