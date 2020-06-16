@@ -133,14 +133,21 @@ class DiceLoss(nn.Module):
         
         #comment out if your model contains a sigmoid or equivalent activation layer
         inputs = F.softmax(inputs, dim = 1)       
-        inputs = inputs[: , 1, : , : , : ]
-        targets = targets[: , 1, : , : , : ]
+        inputs1 = inputs[: , 1, : , : , : ]
+        targets1 = targets[: , 1, : , : , : ]
+        inputs2 = inputs[:,0,...]
+        targets2 = targets[:,0,...]
         #import pdb;pdb.set_trace()
         #flatten label and prediction tensors
-        inputs = inputs.view(-1)
-        targets = targets.reshape(-1) #Ich habe hier von view geandert weil es ein error gibt
+        inputs1 = inputs1.view(-1)
+        targets1 = targets1.reshape(-1) #Ich habe hier von view geandert weil es ein error gibt
         
-        intersection = (inputs * targets).sum()                            
-        dice = (2.*intersection + smooth)/((inputs**2).sum() + (targets**2).sum() + smooth)  
+        intersection1 = (inputs1 * targets1).sum()                            
+        dice1 = (2.*intersection1 + smooth)/((inputs1**2).sum() + (targets1**2).sum() + smooth) 
+        inputs2 = inputs2.view(-1)
+        targets2 = targets2.reshape(-1) #Ich habe hier von view geandert weil es ein error gibt
         
-        return 1 - dice
+        intersection2 = (inputs2 * targets2).sum()                            
+        dice2 = (2.*intersection2 + smooth)/((inputs2**2).sum() + (targets2**2).sum() + smooth) 
+        
+        return 1 - dice1 -0.3*dice2
