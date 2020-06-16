@@ -54,6 +54,7 @@ class Net2_5D(nn.Module):
     
     def __init__(self):
         super(Net2_5D, self).__init__()
+        self.conv0 = nn.Conv2d(16, 32, 5, padding = 2 )
         self.conv1 = nn.Conv2d(32, 64, 5, padding=2)
         
         self.conv2 = nn.Conv2d(64, 32*4, 5, padding=2)
@@ -70,8 +71,10 @@ class Net2_5D(nn.Module):
         
         self.conv6 = nn.Conv2d(3*2*32, 2*32, 5, padding = 2)
         
+        self.conv7 = nn.Conv2d(2*32, 32, 5, padding = 2)
         """this is batch normalization, for 32 channels, implemented after 
         convolutional layers but before Relu, except the last layer"""
+        self.m32 = nn.BatchNorm2d(32)
         self.m64 = nn.BatchNorm2d(64)
         self.m128 = nn.BatchNorm2d(128)
         self.m256 = nn.BatchNorm2d(256)
@@ -79,19 +82,23 @@ class Net2_5D(nn.Module):
     def forward(self, x):
         """Here we take the permutations of the dimensions of the input patch and pass through CNN layers"""
         planes = []
-        y = z = x
         
-        y = y.permute(0, 2, 3, 1)
-        z = z.permute(0, 3, 1, 2)
+# =============================================================================
+#         y = z = x
+#         
+#         y = y.permute(0, 2, 3, 1)
+#         z = z.permute(0, 3, 1, 2)
+#         planes.append(y)
+#         planes.append(z)
+#         
+# =============================================================================
         planes.append(x)
-        planes.append(y)
-        planes.append(z)
         
         
         concat = []
         '''this is a loop to implement the same cnn layers for the different planes of the 3d patch'''
         for x in planes:
-            
+            x = F.relu(self.m32(self.conv0(x)))
             x = F.relu(self.m64(self.conv1(x)))
             x1 = x
             
@@ -115,12 +122,14 @@ class Net2_5D(nn.Module):
             x = torch.cat((x, x1), 1)
             
             x = F.relu(self.m64(self.conv5(x)))
-            
-            concat.append(x)
+            x = self.conv7(x)
+            #concat.append(x)
 
-        x = torch.cat(concat, 1)
-        x = self.conv6(x)
-        
+# =============================================================================
+#         x = torch.cat(concat, 1)
+#         x = self.conv6(x)
+#         
+# =============================================================================
         return x
 
 
@@ -134,7 +143,7 @@ class DiceLoss(nn.Module):
         #comment out if your model contains a sigmoid or equivalent activation layer
         inputs = F.softmax(inputs, dim = 1)       
         inputs = inputs[: , 1, : , : , : ]
-        targets = targets[: , 1, : , : , : ]
+        #targets = targets[: , 1, : , : , : ]
         #import pdb;pdb.set_trace()
         #flatten label and prediction tensors
         inputs = inputs.view(-1)
