@@ -19,9 +19,9 @@ from pathlib import Path
 
 np.set_printoptions(threshold=sys.maxsize)
 
-N_EPOCH = 1
-N_PATCH = 5
-OUTPUT_FREQUENCY = 5
+N_EPOCH = 10
+N_PATCH = 100
+OUTPUT_FREQUENCY = 50
 PATCH_SIZE = [16, 16, 16]
 MIN_LOSS = 0.5
 batch_size = 1
@@ -115,7 +115,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         
         loss.backward()
         
-        list_of_conv = [net.conv0, net.conv1, net.conv2, net.conv3, net.conv4, net.conv5, net.conv6, net.conv7] 
+        list_of_conv = [net.conv0, net.conv1, net.conv2, net.conv3, net.conv4, net.conv5, net.conv7] 
         
         optimizer.step()
         
@@ -127,20 +127,9 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             plt.clf()
             print('[%d, %5d] train loss: %.3f' %
                   (epoch + 1, i + 1, train_loss / OUTPUT_FREQUENCY))
-            import pdb ; pdb.set_trace()
+            #import pdb ; pdb.set_trace()
             module.weights_to_list(list_of_conv, list_of_info, epoch, i, train_loss, OUTPUT_FREQUENCY)
-# =============================================================================
-#             for conv in list_of_conv :
-#                 #print('%d layer ' %list_of_conv.index(conv) , torch.max(conv.weight.grad))
-#                 list_of_info.append(['[%d, %5d] ' % (epoch + 1, i + 1),
-#                                      "train loss: %.3f" % (train_loss / OUTPUT_FREQUENCY),
-#                                     '%d layer ' %list_of_conv.index(conv), 
-#                                     "%.5f" %torch.max(conv.weight.grad).item(),
-#                                     "%.5f" %torch.min(conv.weight.grad).item(),
-#                                     "%.5f" %torch.max(conv.weight).item(),
-#                                     "%.5f" %torch.min(conv.weight).item()])
-#                 
-# =============================================================================
+
             output_array_max = torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
             
             """here is the code for the patch plots"""

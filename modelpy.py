@@ -167,27 +167,20 @@ class DiceLoss(nn.Module):
 
 
 def weights_to_list (list_of_conv, list_of_info, epoch, i, loss, OUTPUT_FREQUENCY):
+    """this is a function to write the weights and grads of the conv layers in a list"""
     for conv in list_of_conv :
         #print('%d layer ' %list_of_conv.index(conv) , torch.max(conv.weight.grad))
         list_of_info.append(['[%d, %5d] ' % (epoch + 1, i + 1),
                                      "%.3f" % (loss / OUTPUT_FREQUENCY),
-                                    '%d layer ' %list_of_conv.index(conv), 
+                                    'layer %d' %list_of_conv.index(conv), 
                                     "%.5f" %torch.max(conv.weight.grad).item(),
                                     "%.5f" %torch.min(conv.weight.grad).item(),
                                     "%.5f" %torch.max(conv.weight).item(),
                                     "%.5f" %torch.min(conv.weight).item()])
     return list_of_info
 
-# =============================================================================
-# list_of_info = [['[1,     5] ', '0.726', '0 layer ', '0.00357', '-0.00503', '0.05026', '-0.05046'], 
-#                 ['[1,     5] ', '0.726', '1 layer ', '0.00358', '-0.00316', '0.03580', '-0.03575'], 
-#                 ['[1,     5] ', '0.726', '2 layer ', '0.00061', '-0.00077', '0.02546', '-0.02545'],
-#                 ['[1,    10] ', '0.707', '0 layer ', '0.04300', '-0.01839', '0.05044', '-0.05052'], 
-#                 ['[1,    10] ', '0.707', '1 layer ', '0.01178', '-0.00999', '0.03611', '-0.03598'],
-#                 ['[1,    10] ', '0.707', '2 layer ', '0.00201', '-0.00105', '0.02578', '-0.02576']]
-# 
-# =============================================================================
 def list_to_excel(list_of_info) :
+    """this is a function to save the list generated from weights_to_list into excel"""
     list_of_columns = ['Epoch_number', 'Loss', 'Conv_layer_num' , 'Grad_max ', 'Grad_min ', 'Weight_max', 'Weight_min']
     df = pd.DataFrame(data = list_of_info, columns = list_of_columns)
     time = datetime.datetime.now()
