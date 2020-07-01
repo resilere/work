@@ -6,6 +6,7 @@ Created on Mon Feb 17 09:27:58 2020
 """
 import modelpy as module
 import numpy as np
+import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 import dicom_to_patches as dtp
@@ -19,7 +20,7 @@ from pathlib import Path
 np.set_printoptions(threshold=sys.maxsize)
 
 N_EPOCH = 1
-N_PATCH = 10
+N_PATCH = 5
 OUTPUT_FREQUENCY = 5
 PATCH_SIZE = [16, 16, 16]
 MIN_LOSS = 0.5
@@ -78,13 +79,13 @@ net.train()
 #weights = torch.FloatTensor([0.5, 5.0])
 #criterion = nn.CrossEntropyLoss(weight = weights)
 criterion = module.DiceLoss()
-optimizer = optim.Adam(net.parameters(), lr=0.01)
+optimizer = optim.Adam(net.parameters(), lr=0.0001)
 
 
 '''this is where the training begins''' 
 valid_loss_min = MIN_LOSS  
+list_of_info = []
 
- 
 for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 
     train_loss = 0.0
@@ -104,23 +105,18 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         output_image = net(input_image).view(batch_size, 2, PATCH_SIZE[0], PATCH_SIZE[1], PATCH_SIZE[2])
 
         """this is to try dice loss function"""
-# =============================================================================
-#         n = 2
-#         
-#         label_vector = torch.nn.functional.one_hot(label, n) # size=(4,7,n)
-#         label_vector = label_vector.permute(0, 4, 1, 2, 3)
-#         
-# =============================================================================
+        n = 2
         
-        loss= criterion(output_image,label)
+        label_vector = torch.nn.functional.one_hot(label, n) # size=(4,7,n)
+        label_vector = label_vector.permute(0, 4, 1, 2, 3)
+        
+        
+        loss= criterion(output_image,label_vector)
         
         loss.backward()
-        print('max grad conv1,', torch.max(net.conv1.weight.grad))
-        print('min grad conv1,', torch.min(net.conv1.weight.grad))
-# =============================================================================
-#         for name, param in net.named_parameters():
-#             print("name parameter", name)
-# =============================================================================
+        
+        list_of_conv = [net.conv0, net.conv1, net.conv2, net.conv3, net.conv4, net.conv5, net.conv6, net.conv7] 
+        
         optimizer.step()
         
         '''print statistics'''
@@ -131,8 +127,20 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             plt.clf()
             print('[%d, %5d] train loss: %.3f' %
                   (epoch + 1, i + 1, train_loss / OUTPUT_FREQUENCY))
-            
-            
+            import pdb ; pdb.set_trace()
+            module.weights_to_list(list_of_conv, list_of_info, epoch, i, train_loss, OUTPUT_FREQUENCY)
+# =============================================================================
+#             for conv in list_of_conv :
+#                 #print('%d layer ' %list_of_conv.index(conv) , torch.max(conv.weight.grad))
+#                 list_of_info.append(['[%d, %5d] ' % (epoch + 1, i + 1),
+#                                      "train loss: %.3f" % (train_loss / OUTPUT_FREQUENCY),
+#                                     '%d layer ' %list_of_conv.index(conv), 
+#                                     "%.5f" %torch.max(conv.weight.grad).item(),
+#                                     "%.5f" %torch.min(conv.weight.grad).item(),
+#                                     "%.5f" %torch.max(conv.weight).item(),
+#                                     "%.5f" %torch.min(conv.weight).item()])
+#                 
+# =============================================================================
             output_array_max = torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
             
             """here is the code for the patch plots"""
@@ -140,6 +148,8 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 
 
             train_loss = 0.0
+    
+    
     print('Finished Training')
     net.eval()
     
@@ -150,15 +160,13 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         patch_index = sample2["patch_index"]
         output_image = net(input_image).view(batch_size, 2, PATCH_SIZE[0], PATCH_SIZE[1], PATCH_SIZE[2])
         """this is to try dice loss function"""
-# =============================================================================
-#         n = 2
-#         
-#         label_vector = torch.nn.functional.one_hot(label, n) 
-#         label_vector = label_vector.permute(0, 4, 2, 3, 1)
-#         
-# =============================================================================
+        n = 2
         
-        loss= criterion(output_image,label)
+        label_vector = torch.nn.functional.one_hot(label, n) 
+        label_vector = label_vector.permute(0, 4, 1, 2, 3)
+        
+        
+        loss= criterion(output_image,label_vector)
         valid_loss += loss.item()
    
         if j % OUTPUT_FREQUENCY == OUTPUT_FREQUENCY - 1:    
@@ -176,5 +184,5 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
                 valid_loss_min = valid_loss/OUTPUT_FREQUENCY
                 torch.save(net.state_dict(), PATH)
             valid_loss = 0.0
-
+module.list_to_excel(list_of_info)
 
