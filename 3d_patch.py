@@ -4,6 +4,7 @@ Created on Mon Feb 17 09:27:58 2020
 
 @author: islere
 """
+#%%
 import modelpy as module
 import numpy as np
 import pandas as pd
@@ -19,7 +20,7 @@ from pathlib import Path
 
 np.set_printoptions(threshold=sys.maxsize)
 
-N_EPOCH = 10
+N_EPOCH = 100
 N_PATCH = 100
 OUTPUT_FREQUENCY = 50
 PATCH_SIZE = [16, 16, 16]
@@ -29,7 +30,7 @@ batch_size = 1
 
 dir_charite = r"C:\Users\islere\Downloads\dicom_data\path_files_for_code\3d_model_orca.pth"
 dir_home_old = "/home/eser/path_files_for_code/3d_model_orca.pth"
-dir_home = 'C:\Users\resil\OneDrive\Documents\work\3d_model_orca.pth'
+dir_home = r"C:\Users\resil\OneDrive\Documents\work\3d_model_orca.pth"
 PATH = dir_home
 
 charite_dir = Path(r"C:/Users/islere/Downloads/dicom_data/Training Set/")
@@ -37,7 +38,7 @@ home_dir_old = Path(r"/home/eser/Downloads/charite/orCaScore/Training Set/")
 home_dir = Path(r"C:\Users\resil\OneDrive\Documents\work\work\training\Training Set")
 
 data_folder = home_dir
-
+#%%
 INPUT_FILES_TRAIN = (
     (
      str(data_folder / 'Images/TRV1P3CTI.mhd' ),
@@ -70,7 +71,7 @@ train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
                                            )
 validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=batch_size,
                                                )
-
+#%%
 net = module.Net2_5D()
 
 """this code is to load a trained model"""
@@ -87,7 +88,7 @@ optimizer = optim.Adam(net.parameters(), lr=0.0001)
 '''this is where the training begins''' 
 valid_loss_min = MIN_LOSS  
 list_of_info = []
-
+#%%
 for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 
     train_loss = 0.0
@@ -143,7 +144,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
     
     print('Finished Training')
     net.eval()
-    
+#%%   
     for j, sample2 in enumerate(validation_loader, 0):
         
         input_image = sample2["image"].float()
@@ -175,5 +176,9 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
                 valid_loss_min = valid_loss/OUTPUT_FREQUENCY
                 torch.save(net.state_dict(), PATH)
             valid_loss = 0.0
-module.list_to_excel(list_of_info)
 
+
+
+# %%
+module.list_to_excel(list_of_info)
+# %%
