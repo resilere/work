@@ -28,11 +28,13 @@ batch_size = 1
 
 
 dir_charite = r"C:\Users\islere\Downloads\dicom_data\path_files_for_code\3d_model_orca.pth"
-dir_home = "/home/eser/path_files_for_code/3d_model_orca.pth"
+dir_home_old = "/home/eser/path_files_for_code/3d_model_orca.pth"
+dir_home = 'C:\Users\resil\OneDrive\Documents\work\3d_model_orca.pth'
 PATH = dir_home
 
 charite_dir = Path(r"C:/Users/islere/Downloads/dicom_data/Training Set/")
-home_dir = Path(r"/home/eser/Downloads/charite/orCaScore/Training Set/")
+home_dir_old = Path(r"/home/eser/Downloads/charite/orCaScore/Training Set/")
+home_dir = Path(r"C:\Users\resil\OneDrive\Documents\work\work\training\Training Set")
 
 data_folder = home_dir
 

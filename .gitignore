@@ -7,3 +7,7 @@ train.py
 min_max.py
 load.py
 gan.py
+*.zraw
+*.mhd
+*.tsv
+*.raw
