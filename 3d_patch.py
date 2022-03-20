@@ -17,10 +17,13 @@ import torch
 import torch.optim as optim
 
 from pathlib import Path
-
+#%%
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using {device} device")
+#%%
 np.set_printoptions(threshold=sys.maxsize)
 
-N_EPOCH = 100
+N_EPOCH = 10
 N_PATCH = 100
 OUTPUT_FREQUENCY = 50
 PATCH_SIZE = [16, 16, 16]
@@ -67,12 +70,12 @@ train_data = dtp.concat_datasets(INPUT_FILES_TRAIN, N_PATCH, PATCH_SIZE)
 validation_data = dtp.concat_datasets(INPUT_FILES_VALIDATION, N_PATCH, PATCH_SIZE)
 
 
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, 
+train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, pin_memory=True
                                            )
-validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=batch_size,
+validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=batch_size, pin_memory=True
                                                )
 #%%
-net = module.Net2_5D()
+net = module.Net2_5D().to(device)
 
 """this code is to load a trained model"""
 #net.load_state_dict(torch.load(PATH))
@@ -98,8 +101,8 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
         
         """ get the inputs; data is a list of [inputs, labels] """
         net.train()
-        input_image = sample["image"].float()
-        label = sample["label"].long()
+        input_image = sample["image"].float().to(device)
+        label = sample["label"].long().to(device)
         patch_index = sample["patch_index"]
         '''zero the parameter gradients'''
         
@@ -147,8 +150,8 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
 #%%   
     for j, sample2 in enumerate(validation_loader, 0):
         
-        input_image = sample2["image"].float()
-        label = sample2["label"].long()
+        input_image = sample2["image"].float().to(device)
+        label = sample2["label"].long().to(device)
         patch_index = sample2["patch_index"]
         output_image = net(input_image).view(batch_size, 2, PATCH_SIZE[0], PATCH_SIZE[1], PATCH_SIZE[2])
         """this is to try dice loss function"""

@@ -11,3 +11,4 @@ gan.py
 *.mhd
 *.tsv
 *.raw
+*.xlsx

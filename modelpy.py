@@ -183,6 +183,7 @@ def list_to_excel(list_of_info) :
     """this is a function to save the list generated from weights_to_list into excel"""
     list_of_columns = ['Epoch_number', 'Loss', 'Conv_layer_num' , 'Grad_max ', 'Grad_min ', 'Weight_max', 'Weight_min']
     df = pd.DataFrame(data = list_of_info, columns = list_of_columns)
-    time = datetime.datetime.now()
-    df.to_excel('%s.xlsx' %time ,sheet_name='parameters')
+    print(df.head())
+    time = datetime.datetime.now().strftime("%Y_%m_%d_%I_%M_%S_%p")
+    df.to_excel(r'created_at_%s.xlsx'%(time) ,sheet_name='parameters')
 #list_to_excel(list_of_info)

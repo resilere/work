@@ -132,11 +132,13 @@ def plot_patches (output_array_max, label, input_image, patch_index, colour, PAT
             axes[0,ind].imshow(output_slices, cmap = colour)
             
             axes[0, ind].axis('off')
-            
+            label = label.cpu()
+            print(label.device)
             label_slices = label.squeeze()[slice_indices[ind], :,:]
             axes[1,ind].imshow(label_slices, cmap = colour)
             axes[1, ind].axis('off')
             
+            input_image=input_image.cpu()
             input_slices = input_image.squeeze()[slice_indices[ind], :, :]
             axes[2,ind].imshow(input_slices, cmap = 'gray')
             
