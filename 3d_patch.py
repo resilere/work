@@ -33,12 +33,12 @@ batch_size = 1
 
 dir_charite = r"C:\Users\islere\Downloads\dicom_data\path_files_for_code\3d_model_orca.pth"
 dir_home_old = "/home/eser/path_files_for_code/3d_model_orca.pth"
-dir_home = r"C:\Users\resil\OneDrive\Documents\work\3d_model_orca.pth"
+dir_home = r"C:\Users\resil\Documents\work\3d_model_orca.pth"
 PATH = dir_home
 
 charite_dir = Path(r"C:/Users/islere/Downloads/dicom_data/Training Set/")
 home_dir_old = Path(r"/home/eser/Downloads/charite/orCaScore/Training Set/")
-home_dir = Path(r"C:\Users\resil\OneDrive\Documents\work\work\training\Training Set")
+home_dir = Path(r"C:\Users\resil\Documents\work\work\training\Training Set")
 
 data_folder = home_dir
 #%%
@@ -85,7 +85,7 @@ net.train()
 #weights = torch.FloatTensor([0.5, 5.0])
 #criterion = nn.CrossEntropyLoss(weight = weights)
 criterion = module.DiceLoss()
-optimizer = optim.Adam(net.parameters(), lr=0.0001)
+optimizer = optim.Adam(net.parameters(), lr=0.0001,weight_decay=1e-5)
 
 
 '''this is where the training begins''' 
@@ -133,7 +133,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
             plt.clf()
             print('[%d, %5d] train loss: %.3f' %
                   (epoch + 1, i + 1, train_loss / OUTPUT_FREQUENCY))
-            #import pdb ; pdb.set_trace()
+            
             module.weights_to_list(list_of_conv, list_of_info, epoch, i, train_loss, OUTPUT_FREQUENCY)
 
             output_array_max = torch.argmax(output_image.squeeze(), dim=0).detach().cpu().numpy()
@@ -147,7 +147,7 @@ for epoch in range(N_EPOCH):  # loop over the dataset multiple times
     
     print('Finished Training')
     net.eval()
-#%%   
+   
     for j, sample2 in enumerate(validation_loader, 0):
         
         input_image = sample2["image"].float().to(device)
