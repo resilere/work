@@ -150,15 +150,15 @@ class DiceLoss(nn.Module):
         targets2 = targets[:,0, : , : , : ]
 
       
-        #import pdb;pdb.set_trace()
+        
         #flatten label and prediction tensors
         inputs1 = inputs1.view(-1)
-        targets1 = targets1.reshape(-1) #Ich habe hier von view geandert weil es ein error gibt
+        targets1 = targets1.reshape(-1) 
         
         intersection1 = (inputs1 * targets1).sum()                            
         dice1 = (2.*intersection1 + smooth)/((inputs1**2).sum() + (targets1**2).sum() + smooth) 
         inputs2 = inputs2.view(-1)
-        targets2 = targets2.reshape(-1) #Ich habe hier von view geandert weil es ein error gibt
+        targets2 = targets2.reshape(-1)
         
         intersection2 = (inputs2 * targets2).sum()                            
         dice2 = (2.*intersection2 + smooth)/((inputs2**2).sum() + (targets2**2).sum() + smooth) 
